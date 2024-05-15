@@ -1,15 +1,23 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import fireConfing from './config';
+import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
+// import fireConfing from './config';
 
 const app = express();
 app.use(bodyParser.json());
 
 const port = 4000;
 
-const firebaseConfig = fireConfing;
+const firebaseConfig = {
+    apiKey: "AIzaSyCak2gNPt427qok9rFFVBv175L8gOeSfIs",
+    authDomain: "crud-express-api.firebaseapp.com",
+    projectId: "crud-express-api",
+    storageBucket: "crud-express-api.appspot.com",
+    messagingSenderId: "659708285200",
+    appId: "1:659708285200:web:0756f8963d4eee55d31595",
+    measurementId: "G-P0D90XYGR8"
+};
 
 const fireInit = initializeApp(firebaseConfig);
 
@@ -17,19 +25,70 @@ const auth = getAuth();
 
 // Route for signing in
 app.post('/signup', async (req, res) => {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: "Please provide name, email, and password" });
+    }
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        // Additional logic upon successful sign in
-        res.status(200).json({ message: "User signed in successfully", user });
+        await updateProfile(auth.currentUser, { displayName: name });
+        return res.status(200).json({
+            message: "User signed in successfully",
+            data: {
+                name: name
+            }
+        });
     } catch (error) {
         const errorCode = error.code;
         const errorMessage = error.message;
-        res.status(400).json({ errorCode, errorMessage });
+        return res.status(400).json({ errorCode, errorMessage });
     }
 });
+
+app.post('/signin', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: "Please provide email and password" });
+    }
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        const user = userCredential.user;
+
+        const displayName = user.displayName;
+        return res.status(200).json({
+            message: "User logged in successfully",
+            data: {
+                name: displayName
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.error("Login error:", errorCode, errorMessage);
+        return res.status(401).json({ error: errorMessage });
+    }
+});
+
+app.post('/logout', async (req, res) => {
+    try {
+        await signOut(auth);
+
+        console.log("User signed out");
+
+        return res.status(200).json({ message: "User logged out successfully" })
+    } catch (error) {
+        const errorCode  = error.code;
+        const errorMessage = error.message;
+        console.error("Logout error:", errorCode, errorMessage);
+        return res.status(500).json({ error: errorMessage});
+    }
+})
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
