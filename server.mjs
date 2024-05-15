@@ -2,22 +2,14 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
-// import fireConfing from './config';
+import fireConfing from './config';
 
 const app = express();
 app.use(bodyParser.json());
 
 const port = 4000;
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCak2gNPt427qok9rFFVBv175L8gOeSfIs",
-    authDomain: "crud-express-api.firebaseapp.com",
-    projectId: "crud-express-api",
-    storageBucket: "crud-express-api.appspot.com",
-    messagingSenderId: "659708285200",
-    appId: "1:659708285200:web:0756f8963d4eee55d31595",
-    measurementId: "G-P0D90XYGR8"
-};
+const firebaseConfig = fireConfing;
 
 const fireInit = initializeApp(firebaseConfig);
 
