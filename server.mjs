@@ -9,10 +9,6 @@ import { getFirestore, collection, getDocs, setDoc, doc } from 'firebase/firesto
 
 const app = express();
 
-const whitelist = [
-    '*'
-];
-
 app.use(bodyParser.json());
 
 const port = 4000;
