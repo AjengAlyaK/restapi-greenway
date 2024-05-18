@@ -44,6 +44,11 @@ const db = getFirestore(fireInit);
 const auth = getAuth();
 
 // db: green
+app.get('/', async (req, res) => {
+    return res.status(200).json({
+        status: "success"
+    })
+})
 
 // Route for signing in
 app.post('/register', async (req, res) => {
