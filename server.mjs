@@ -8,6 +8,11 @@ import { getFirestore, collection, getDocs, setDoc, doc } from 'firebase/firesto
 // import { fireConfig } from './config';
 
 const app = express();
+
+const whitelist = [
+    '*'
+];
+
 app.use(bodyParser.json());
 
 const port = 4000;
