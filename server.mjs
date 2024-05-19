@@ -3,17 +3,13 @@ import bodyParser from 'body-parser';
 import { initializeApp } from 'firebase/app';
 import admin from 'firebase-admin';
 import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { getFirestore, collection, getDocs, setDoc, doc } from 'firebase/firestore/lite';
-// import { serviceKey } from '../serviceKey.json' assert { type: "json" };
-// import { fireConfig } from './config';
+import { getFirestore, collection, getDocs, setDoc, doc, addDoc, getDoc } from 'firebase/firestore/lite';
+import { register, login, logout } from './controllers/auth.mjs';
+import { addCampaign, allCampaign, campaignById } from './controllers/campaign.mjs';
 
 const app = express();
-
 app.use(bodyParser.json());
-
 const port = 4000;
-
-// const firebaseConfig = fireConfig;
 
 const fireInit = initializeApp({
     apiKey: "AIzaSyAxWdJ-mNMjucjnVhv2821_nP5mVYPFS_k",
@@ -41,100 +37,25 @@ admin.initializeApp({
 });
 
 const db = getFirestore(fireInit);
-
-const auth = getAuth();
+const auth = getAuth(fireInit);
 
 // db: green
+
 app.get('/', async (req, res) => {
     return res.status(200).json({
         status: "success"
     })
 })
 
-// Route for signing in
-app.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+// Route for auth
+app.post('/register', register);
+app.post('/login', login);
+app.post('/logout', logout);
 
-    if (!name || !email || !password) {
-        return res.status(400).json({ error: "Please provide name, email, and password" });
-    }
-
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        await updateProfile(auth.currentUser, { displayName: name });
-        await setDoc(doc(db, 'users', user.uid), {
-            // uid: user.uid,
-            email: user.email,
-            displayName: name,
-            createdAt: new Date(),
-        });
-        return res.status(200).json({
-            status: "success",
-            message: "User created",
-            data: {
-                user: {
-                    id: user.uid,
-                    name: name,
-                    email: user.email,
-                }
-            }
-        });
-    } catch (error) {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        return res.status(400).json({
-            error: {
-                errorCode,
-                errorMessage
-            }
-        });
-    }
-});
-
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ error: "Please provide email and password" });
-    }
-
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-
-        const user = userCredential.user;
-        const accessToken = user.stsTokenManager.accessToken;
-
-        // const displayName = user.displayName;
-        return res.status(200).json({
-            status: "success",
-            message: "ok",
-            data: {
-                token: accessToken
-            }
-        });
-    } catch (error) {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.error("Login error:", errorCode, errorMessage);
-        return res.status(401).json({ error: errorMessage });
-    }
-});
-
-app.post('/logout', async (req, res) => {
-    try {
-        await signOut(auth);
-
-        console.log("User signed out");
-
-        return res.status(200).json({ message: "User logged out successfully" })
-    } catch (error) {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.error("Logout error:", errorCode, errorMessage);
-        return res.status(500).json({ error: errorMessage });
-    }
-})
+// Route for campaign
+app.post('/campaign', addCampaign);
+app.get('/campaigns', allCampaign);
+app.get('/campaign/:id', campaignById);
 
 // Middleware to verify Firebase ID token
 const verifyToken = async (req, res, next) => {
