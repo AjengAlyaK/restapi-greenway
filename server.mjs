@@ -6,6 +6,7 @@ import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmail
 import { getFirestore, collection, getDocs, setDoc, doc, addDoc, getDoc } from 'firebase/firestore/lite';
 import { register, login, logout } from './controllers/auth.mjs';
 import { addCampaign, allCampaign, campaignById } from './controllers/campaign.mjs';
+import { allReview, review } from './controllers/review.mjs';
 
 const app = express();
 app.use(bodyParser.json());
@@ -56,6 +57,10 @@ app.post('/logout', logout);
 app.post('/campaign', addCampaign);
 app.get('/campaigns', allCampaign);
 app.get('/campaign/:id', campaignById);
+
+// route for people are talking
+app.post('/review', review);
+app.get('/reviews', allReview);
 
 // Middleware to verify Firebase ID token
 const verifyToken = async (req, res, next) => {

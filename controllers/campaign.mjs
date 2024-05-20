@@ -68,7 +68,7 @@ export const allCampaign = async (req, res) => {
             data: {
                 campaigns: campaignList
             }
-        })
+        });
     } catch (error) {
         const errorCode = error.code;
         const errorMessage = error.message;
