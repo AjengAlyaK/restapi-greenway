@@ -58,7 +58,7 @@ app.post('/campaign', addCampaign);
 app.get('/campaigns', allCampaign);
 app.get('/campaign/:id', campaignById);
 
-// route for people are talking
+// Route for people are talking
 app.post('/review', review);
 app.get('/reviews', allReview);
 
