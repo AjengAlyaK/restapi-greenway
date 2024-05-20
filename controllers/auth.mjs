@@ -73,7 +73,7 @@ export const login = async (req, res) => {
             status: "success",
             message: "ok",
             data: {
-                name: user.name,
+                name: user.displayName,
                 token: accessToken
             }
         });
