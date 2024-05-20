@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 import { initializeApp } from 'firebase/app';
 import admin from 'firebase-admin';
 import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
@@ -10,6 +11,7 @@ import { allReview, review } from './controllers/review.mjs';
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors());
 const port = 4000;
 
 const fireInit = initializeApp({
