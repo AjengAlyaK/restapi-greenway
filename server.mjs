@@ -8,6 +8,8 @@ import { getFirestore, collection, getDocs, setDoc, doc, addDoc, getDoc } from '
 import { register, login, logout } from './controllers/auth.mjs';
 import { addCampaign, allCampaign, campaignById } from './controllers/campaign.mjs';
 import { allReview, review } from './controllers/review.mjs';
+import { addArticle, allArticles } from './controllers/article.mjs';
+// const { body, validationResult } = require('express-validator');
 
 const app = express();
 app.use(bodyParser.json());
@@ -63,6 +65,10 @@ app.get('/campaign/:id', campaignById);
 // Route for people are talking
 app.post('/review', review);
 app.get('/reviews', allReview);
+
+// Route for artikel
+app.post('/article', addArticle);
+app.get('/articles', allArticles);
 
 // Middleware to verify Firebase ID token
 const verifyToken = async (req, res, next) => {

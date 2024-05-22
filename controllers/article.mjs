@@ -15,27 +15,26 @@ const fireInit = initializeApp(firebaseConfig);
 const auth = getAuth(fireInit);
 const db = getFirestore(fireInit);
 
-export const review = async (req, res) => {
-    const { name, review, photo } = req.body;
-    // Validate required fields
-    if (!name || !review || !photo) {
-        return res.status(400).json({ error: "name, review, and photo are required." });
+export const addArticle = async (req, res) => {
+    const { title, picture, link } = req.body;
+    if (!title || !picture || !link) {
+        return res.status(400).json({ error: "title, picture, and link are required." });
     }
     try {
-        const addReview = await addDoc(collection(db, "reviews"), {
-            name: name,
-            review: review,
-            photo: photo
+        const addArticle = await addDoc(collection(db, "articles"), {
+            title: title,
+            picture: picture,
+            link: link
         });
         return res.status(200).json({
             status: "success",
             message: "ok",
             data: {
-                review: {
-                    id: addReview.id,
-                    name,
-                    review,
-                    photo
+                article: {
+                    id: addArticle.id,
+                    title,
+                    picture,
+                    link
                 }
             }
         });
@@ -51,11 +50,11 @@ export const review = async (req, res) => {
     }
 };
 
-export const allReview = async (req, res) => {
+export const allArticles = async (req, res) => {
     try {
-        const reviews = collection(db, 'reviews');
-        const reviewSnapshot = await getDocs(reviews);
-        const reviewList = reviewSnapshot.docs.map(doc => ({
+        const articles = collection(db, 'articles');
+        const articleSnapshot = await getDocs(articles);
+        const articleList = articleSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
@@ -63,7 +62,7 @@ export const allReview = async (req, res) => {
             status: "success",
             message: "ok",
             data: {
-                reviews: reviewList
+                articles: articleList
             }
         });
     } catch (error) {
@@ -76,4 +75,4 @@ export const allReview = async (req, res) => {
             }
         });
     }
-}
+};
