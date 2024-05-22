@@ -76,7 +76,7 @@ app.get('/articles', allArticles);
 // Destination
 app.post('/destination', async (req, res) => {
     const { name, photo, location, description, idCampaign } = req.body;
-    if (!name || !photo || !location || !description || idCampaign) {
+    if (!name || !photo || !location || !description ) {
         return res.status(400).json({ error: "name, photo, location and description are required." });
     }
     const campaignId = idCampaign !== undefined ? idCampaign : null;
@@ -97,7 +97,7 @@ app.post('/destination', async (req, res) => {
                     name,
                     photo,
                     location,
-                    description, 
+                    description,
                     idCampaign: campaignId
                 }
             }
@@ -114,52 +114,89 @@ app.post('/destination', async (req, res) => {
     }
 });
 
+// app.get('/destinations', async (req, res) => {
+//     // get all destination
+//     try {
+//         const resList = [];
+//         const destinations = collection(db, 'destinations');
+//         const destinationSnapshot = await getDocs(destinations);
+//         const destinationList = destinationSnapshot.docs.map(doc => ({
+//             id: doc.id,
+//             ...doc.data()
+//         }));
+
+//         destinationList.forEach(async(destination) => {
+//             if (destination.idCampaign) {
+//                 // Perform your action here
+//                 console.log(`Document with ID ${destination.id} has idCampaign: ${destination.idCampaign}`);
+//                 const campaignDocSnapshot = await getDoc(doc(db, 'campaigns', destination.idCampaign));
+//                 // console.log(campaignDoc);
+//                 if (campaignDocSnapshot.exists()) {
+//                     const campaignData = campaignDocSnapshot.data();
+//                     const concate = {
+//                         ...destination,
+//                         campaign: campaignData
+//                     }
+//                     // console.log(concate);
+//                     resList.push(concate);
+//                 } else {
+//                     console.log("Document does not exist");
+//                 }
+//             }
+//         });        
+        
+//         return res.status(200).json({
+//             // data: destinationList
+//             data: resList
+//         })
+//     } catch (error) {
+
+//     }
+// });
+
 app.get('/destinations', async (req, res) => {
     try {
-        const destinationsRef = collection(db, 'destinations');
-        const destinationSnapshot = await getDocs(destinationsRef);
-        const destinationList = [];
+        const destinations = collection(db, 'destinations');
+        const destinationSnapshot = await getDocs(destinations);
+        const destinationList = destinationSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
 
-        for (const doc of destinationSnapshot.docs) {
-            const destinationData = doc.data();
-
-            if (destinationData.idCampaign !== null) {
-                // Reference the campaign document directly using its ID
-                const campaignRef = doc(db, 'campaigns', destinationData.idCampaign);
-                const campaignDoc = await getDoc(campaignRef);
-
-                if (campaignDoc.exists()) {
-                    const campaignData = campaignDoc.data();
-                    destinationData.campaign = campaignData;
+        const promises = [];
+        for (const destination of destinationList) {
+            if (destination.idCampaign) {
+                console.log(`Document with ID ${destination.id} has idCampaign: ${destination.idCampaign}`);
+                const campaignDocSnapshot = await getDoc(doc(db, 'campaigns', destination.idCampaign));
+                if (campaignDocSnapshot.exists()) {
+                    const campaignData = campaignDocSnapshot.data();
+                    const concate = {
+                        ...destination,
+                        campaign: campaignData
+                    };
+                    promises.push(concate);
                 } else {
-                    console.log(`Campaign document with ID ${destinationData.idCampaign} does not exist.`);
+                    console.log("Document does not exist");
                 }
+            } else {
+                const onlyDestination = {
+                    ...destination
+                }
+                promises.push(onlyDestination);
             }
-
-            destinationList.push({
-                id: doc.id,
-                ...destinationData
-            });
         }
 
+        const resList = await Promise.all(promises);
+        
         return res.status(200).json({
-            status: "success",
-            message: "ok",
-            data: {
-                destinations: destinationList
-            }
+            data: resList
         });
     } catch (error) {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        return res.status(400).json({
-            error: {
-                errorCode,
-                errorMessage
-            }
-        });
+        console.error(error);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
 
 // Middleware to verify Firebase ID token
 const verifyToken = async (req, res, next) => {
