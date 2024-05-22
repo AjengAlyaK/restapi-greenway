@@ -10,6 +10,9 @@ import { addCampaign, allCampaign, campaignById } from './controllers/campaign.m
 import { allReview, review } from './controllers/review.mjs';
 import { addArticle, allArticles } from './controllers/article.mjs';
 // const { body, validationResult } = require('express-validator');
+import * as firebase from 'firebase/app';
+import 'firebase/firestore';
+
 
 const app = express();
 app.use(bodyParser.json());
@@ -70,6 +73,94 @@ app.get('/reviews', allReview);
 app.post('/article', addArticle);
 app.get('/articles', allArticles);
 
+// Destination
+app.post('/destination', async (req, res) => {
+    const { name, photo, location, description, idCampaign } = req.body;
+    if (!name || !photo || !location || !description || idCampaign) {
+        return res.status(400).json({ error: "name, photo, location and description are required." });
+    }
+    const campaignId = idCampaign !== undefined ? idCampaign : null;
+    try {
+        const addDestination = await addDoc(collection(db, "destinations"), {
+            name: name,
+            photo: photo,
+            location: location,
+            description: description,
+            idCampaign: campaignId
+        });
+        return res.status(200).json({
+            status: "success",
+            message: "ok",
+            data: {
+                destination: {
+                    id: addDestination.id,
+                    name,
+                    photo,
+                    location,
+                    description, 
+                    idCampaign: campaignId
+                }
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+});
+
+app.get('/destinations', async (req, res) => {
+    try {
+        const destinationsRef = collection(db, 'destinations');
+        const destinationSnapshot = await getDocs(destinationsRef);
+        const destinationList = [];
+
+        for (const doc of destinationSnapshot.docs) {
+            const destinationData = doc.data();
+
+            if (destinationData.idCampaign !== null) {
+                // Reference the campaign document directly using its ID
+                const campaignRef = doc(db, 'campaigns', destinationData.idCampaign);
+                const campaignDoc = await getDoc(campaignRef);
+
+                if (campaignDoc.exists()) {
+                    const campaignData = campaignDoc.data();
+                    destinationData.campaign = campaignData;
+                } else {
+                    console.log(`Campaign document with ID ${destinationData.idCampaign} does not exist.`);
+                }
+            }
+
+            destinationList.push({
+                id: doc.id,
+                ...destinationData
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            message: "ok",
+            data: {
+                destinations: destinationList
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+});
+
 // Middleware to verify Firebase ID token
 const verifyToken = async (req, res, next) => {
     const idToken = req.headers.authorization?.split('Bearer ')[1];
@@ -87,6 +178,17 @@ const verifyToken = async (req, res, next) => {
         return res.status(403).json({ error: 'Unauthorized' });
     }
 };
+
+// See Own Profile
+app.get('/me', verifyToken, (req, res) => {
+    res.status(200).json({
+        status: "success",
+        message: "ok",
+        data: {
+            user: req.user
+        }
+    });
+});
 
 // Authorization route
 app.get('/authorize', verifyToken, (req, res) => {
