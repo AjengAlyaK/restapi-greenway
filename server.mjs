@@ -4,15 +4,14 @@ import cors from 'cors';
 import { initializeApp } from 'firebase/app';
 import admin from 'firebase-admin';
 import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { getFirestore, collection, getDocs, setDoc, doc, addDoc, getDoc } from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs, setDoc, doc, addDoc, getDoc, query, where } from 'firebase/firestore/lite';
 import { register, login, logout } from './controllers/auth.mjs';
 import { addCampaign, allCampaign, campaignById } from './controllers/campaign.mjs';
 import { allReview, review } from './controllers/review.mjs';
 import { addArticle, allArticles } from './controllers/article.mjs';
-// const { body, validationResult } = require('express-validator');
-import * as firebase from 'firebase/app';
 import 'firebase/firestore';
-
+import { addDestination, allDestination } from './controllers/destination.mjs';
+// import { verifyToken } from './middleware/verifyToken.mjs';
 
 const app = express();
 app.use(bodyParser.json());
@@ -49,6 +48,24 @@ const auth = getAuth(fireInit);
 
 // db: green
 
+// middleware
+const verifyToken = async (req, res, next) => {
+    const idToken = req.headers.authorization?.split('Bearer ')[1];
+
+    if (!idToken) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        req.user = decodedToken;
+        next();
+    } catch (error) {
+        console.error('Token verification error:', error);
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+};
+
 app.get('/', async (req, res) => {
     return res.status(200).json({
         status: "success"
@@ -74,31 +91,78 @@ app.post('/article', addArticle);
 app.get('/articles', allArticles);
 
 // Destination
-app.post('/destination', async (req, res) => {
-    const { name, photo, location, description, idCampaign } = req.body;
-    if (!name || !photo || !location || !description ) {
-        return res.status(400).json({ error: "name, photo, location and description are required." });
-    }
-    const campaignId = idCampaign !== undefined ? idCampaign : null;
+app.post('/destination', addDestination);
+app.get('/destinations', allDestination);
+app.post('/destination/comment', verifyToken, async (req, res) => {
+    const { idDestination, comment } = req.body;
+    const idUser = req.user.uid;
+    const addCommentOnDestination = await addDoc(collection(db, 'comment_on_destination'), {
+        idDestination: idDestination,
+        idUser: idUser,
+        comment: comment,
+        createdAt: new Date()
+    });
+    return res.status(200).json({
+        status: "success",
+        message: "ok",
+        data: {
+            comment: {
+                id: addCommentOnDestination.id,
+                idDestination,
+                idUser,
+                comment,
+                createdAt: new Date()
+            }
+        }
+    });
+});
+app.get('/destination/:id', async (req, res) => {
+    const destinationId = req.params.id;
     try {
-        const addDestination = await addDoc(collection(db, "destinations"), {
-            name: name,
-            photo: photo,
-            location: location,
-            description: description,
-            idCampaign: campaignId
+        // get destination by id param
+        const destinationDoc = await getDoc(doc(db, 'destinations', destinationId));
+        if (!destinationDoc.exists()) {
+            return res.status(404).json({
+                error: "Destination not found"
+            });
+        }
+        const destinationData = destinationDoc.data();
+        const idCampaign = destinationData.idCampaign;
+        
+        // get campaign by idCampaign in destination
+        let campaignData = null;
+        if (idCampaign !== null) {
+            const campaignDoc = await getDoc(doc(db, 'campaigns', idCampaign));
+            if (!campaignDoc.exists()) {
+                return res.status(404).json({
+                    error: "Campaign not found"
+                });
+            }
+            campaignData = campaignDoc.data();
+        }
+
+        // get all comment where idDestination is same as param
+        const comments_on_destination = []
+        const commentsRef = collection(db, "comment_on_destination");
+        const q = query(commentsRef, where("idDestination", "==", destinationId));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const createdAt = data.createdAt;
+            const date = createdAt.toDate();
+            data.createdAt = date.toISOString();
+            // console.log("data => ", data);
+            comments_on_destination.push(data);
         });
+
         return res.status(200).json({
             status: "success",
             message: "ok",
             data: {
-                destination: {
-                    id: addDestination.id,
-                    name,
-                    photo,
-                    location,
-                    description,
-                    idCampaign: campaignId
+                detailDestination: {
+                    ...destinationData,
+                    campaign: campaignData,
+                    comments: comments_on_destination,
                 }
             }
         });
@@ -114,108 +178,6 @@ app.post('/destination', async (req, res) => {
     }
 });
 
-// app.get('/destinations', async (req, res) => {
-//     // get all destination
-//     try {
-//         const resList = [];
-//         const destinations = collection(db, 'destinations');
-//         const destinationSnapshot = await getDocs(destinations);
-//         const destinationList = destinationSnapshot.docs.map(doc => ({
-//             id: doc.id,
-//             ...doc.data()
-//         }));
-
-//         destinationList.forEach(async(destination) => {
-//             if (destination.idCampaign) {
-//                 // Perform your action here
-//                 console.log(`Document with ID ${destination.id} has idCampaign: ${destination.idCampaign}`);
-//                 const campaignDocSnapshot = await getDoc(doc(db, 'campaigns', destination.idCampaign));
-//                 // console.log(campaignDoc);
-//                 if (campaignDocSnapshot.exists()) {
-//                     const campaignData = campaignDocSnapshot.data();
-//                     const concate = {
-//                         ...destination,
-//                         campaign: campaignData
-//                     }
-//                     // console.log(concate);
-//                     resList.push(concate);
-//                 } else {
-//                     console.log("Document does not exist");
-//                 }
-//             }
-//         });        
-        
-//         return res.status(200).json({
-//             // data: destinationList
-//             data: resList
-//         })
-//     } catch (error) {
-
-//     }
-// });
-
-app.get('/destinations', async (req, res) => {
-    try {
-        const destinations = collection(db, 'destinations');
-        const destinationSnapshot = await getDocs(destinations);
-        const destinationList = destinationSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-
-        const promises = [];
-        for (const destination of destinationList) {
-            if (destination.idCampaign) {
-                console.log(`Document with ID ${destination.id} has idCampaign: ${destination.idCampaign}`);
-                const campaignDocSnapshot = await getDoc(doc(db, 'campaigns', destination.idCampaign));
-                if (campaignDocSnapshot.exists()) {
-                    const campaignData = campaignDocSnapshot.data();
-                    const concate = {
-                        ...destination,
-                        campaign: campaignData
-                    };
-                    promises.push(concate);
-                } else {
-                    console.log("Document does not exist");
-                }
-            } else {
-                const onlyDestination = {
-                    ...destination
-                }
-                promises.push(onlyDestination);
-            }
-        }
-
-        const resList = await Promise.all(promises);
-        
-        return res.status(200).json({
-            data: resList
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-
-
-// Middleware to verify Firebase ID token
-const verifyToken = async (req, res, next) => {
-    const idToken = req.headers.authorization?.split('Bearer ')[1];
-
-    if (!idToken) {
-        return res.status(403).json({ error: 'Unauthorized' });
-    }
-
-    try {
-        const decodedToken = await admin.auth().verifyIdToken(idToken);
-        req.user = decodedToken;
-        next();
-    } catch (error) {
-        console.error('Token verification error:', error);
-        return res.status(403).json({ error: 'Unauthorized' });
-    }
-};
-
 // See Own Profile
 app.get('/me', verifyToken, (req, res) => {
     res.status(200).json({
@@ -229,7 +191,7 @@ app.get('/me', verifyToken, (req, res) => {
 
 // Authorization route
 app.get('/authorize', verifyToken, (req, res) => {
-    res.status(200).json({ message: 'User is authorized', user: req.user });
+    res.status(200).json({ message: 'User is authorized', user: req.user.id });
 });
 
 app.listen(port, () => {
