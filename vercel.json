@@ -11,9 +11,5 @@
             "src": "/(.*)",
             "dest": "server.mjs"
         }
-    ],
-    "static": {
-        "source": "public",
-        "basePath": "/public"
-    }
+    ]
 }
