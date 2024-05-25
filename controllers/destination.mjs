@@ -90,10 +90,113 @@ export const allDestination = async (req, res) => {
         const resList = await Promise.all(promises);
         
         return res.status(200).json({
+            status: "success",
+            message: "ok",
             data: resList
         });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Internal Server Error" });
     }
+};
+
+export const destinationById = async (req, res) => {
+    const destinationId = req.params.id;
+    try {
+        // get destination by id param
+        const destinationDoc = await getDoc(doc(db, 'destinations', destinationId));
+        if (!destinationDoc.exists()) {
+            return res.status(404).json({
+                error: "Destination not found"
+            });
+        }
+        const destinationData = destinationDoc.data();
+        const idCampaign = destinationData.idCampaign;
+        
+        // get campaign by idCampaign in destination
+        let campaignData = null;
+        if (idCampaign !== null) {
+            const campaignDoc = await getDoc(doc(db, 'campaigns', idCampaign));
+            if (!campaignDoc.exists()) {
+                return res.status(404).json({
+                    error: "Campaign not found"
+                });
+            }
+            campaignData = campaignDoc.data();
+        }
+
+        // get all comment where idDestination is same as param
+        const comments_on_destination = []
+        const commentsRef = collection(db, "comment_on_destination");
+        const q = query(commentsRef, where("idDestination", "==", destinationId));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const createdAt = data.createdAt;
+            const date = createdAt.toDate();
+            data.createdAt = date.toISOString();
+            // console.log("data => ", data);
+            comments_on_destination.push(data);
+        });
+
+        return res.status(200).json({
+            status: "success",
+            message: "ok",
+            data: {
+                detailDestination: {
+                    ...destinationData,
+                    campaign: campaignData,
+                    comments: comments_on_destination,
+                }
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+};
+
+export const commentOnDestination = async (req, res) => {
+    const { idDestination, comment } = req.body;
+    if (!idDestination || !comment ) {
+        return res.status(400).json({ error: "idDestination and comment are required are required." });
+    }
+    const idUser = req.user.uid;
+    try {
+        const addCommentOnDestination = await addDoc(collection(db, 'comment_on_destination'), {
+            idDestination: idDestination,
+            idUser: idUser,
+            comment: comment,
+            createdAt: new Date()
+        });
+        return res.status(200).json({
+            status: "success",
+            message: "ok",
+            data: {
+                comment: {
+                    id: addCommentOnDestination.id,
+                    idDestination,
+                    idUser,
+                    comment,
+                    createdAt: new Date()
+                }
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+    
 };

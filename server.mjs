@@ -10,7 +10,7 @@ import { addCampaign, allCampaign, campaignById } from './controllers/campaign.m
 import { allReview, review } from './controllers/review.mjs';
 import { addArticle, allArticles } from './controllers/article.mjs';
 import 'firebase/firestore';
-import { addDestination, allDestination } from './controllers/destination.mjs';
+import { addDestination, allDestination, commentOnDestination, destinationById } from './controllers/destination.mjs';
 // import { verifyToken } from './middleware/verifyToken.mjs';
 
 const app = express();
@@ -93,77 +93,58 @@ app.get('/articles', allArticles);
 // Destination
 app.post('/destination', addDestination);
 app.get('/destinations', allDestination);
-app.post('/destination/comment', verifyToken, async (req, res) => {
-    const { idDestination, comment } = req.body;
+app.get('/destination/:id', destinationById);
+app.post('/destination/comment', verifyToken, commentOnDestination);
+
+// Discussion
+app.post('/discussion', verifyToken, async (req, res) => {
+    const { title, body } = req.body;
     const idUser = req.user.uid;
-    const addCommentOnDestination = await addDoc(collection(db, 'comment_on_destination'), {
-        idDestination: idDestination,
-        idUser: idUser,
-        comment: comment,
-        createdAt: new Date()
-    });
-    return res.status(200).json({
-        status: "success",
-        message: "ok",
-        data: {
-            comment: {
-                id: addCommentOnDestination.id,
-                idDestination,
-                idUser,
-                comment,
-                createdAt: new Date()
-            }
-        }
-    });
-});
-app.get('/destination/:id', async (req, res) => {
-    const destinationId = req.params.id;
     try {
-        // get destination by id param
-        const destinationDoc = await getDoc(doc(db, 'destinations', destinationId));
-        if (!destinationDoc.exists()) {
-            return res.status(404).json({
-                error: "Destination not found"
-            });
-        }
-        const destinationData = destinationDoc.data();
-        const idCampaign = destinationData.idCampaign;
-        
-        // get campaign by idCampaign in destination
-        let campaignData = null;
-        if (idCampaign !== null) {
-            const campaignDoc = await getDoc(doc(db, 'campaigns', idCampaign));
-            if (!campaignDoc.exists()) {
-                return res.status(404).json({
-                    error: "Campaign not found"
-                });
-            }
-            campaignData = campaignDoc.data();
-        }
-
-        // get all comment where idDestination is same as param
-        const comments_on_destination = []
-        const commentsRef = collection(db, "comment_on_destination");
-        const q = query(commentsRef, where("idDestination", "==", destinationId));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            const createdAt = data.createdAt;
-            const date = createdAt.toDate();
-            data.createdAt = date.toISOString();
-            // console.log("data => ", data);
-            comments_on_destination.push(data);
+        const addDiscussion = await addDoc(collection(db, 'discussions'), {
+            idUser: idUser,
+            title: title,
+            body: body,
+            createdAt: new Date()
         });
-
         return res.status(200).json({
             status: "success",
             message: "ok",
             data: {
-                detailDestination: {
-                    ...destinationData,
-                    campaign: campaignData,
-                    comments: comments_on_destination,
+                discussion: {
+                    id: addDiscussion.id,
+                    idUser,
+                    title,
+                    body,
+                    createdAt: new Date()
                 }
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+});
+
+app.get('/discussions', async(req, res) => {
+    try {
+        const discussions =collection(db, 'discussions');
+        const discussionSnapshot = await getDocs(discussions);
+        const discussionList = discussionSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        return res.status(200).json({
+            status: "success",
+            message: "ok",
+            data: {
+                discussions: discussionList
             }
         });
     } catch (error) {
