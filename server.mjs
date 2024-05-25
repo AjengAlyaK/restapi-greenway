@@ -16,7 +16,7 @@ import { addDestination, allDestination, commentOnDestination, destinationById }
 // import { verifyToken } from './middleware/verifyToken.mjs';
 
 const app = express();
-app.use(express.static('public'))
+app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(cors());
 const port = 4000;
