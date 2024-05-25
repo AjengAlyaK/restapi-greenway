@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import { initializeApp } from 'firebase/app';
@@ -14,6 +16,12 @@ import { addDestination, allDestination, commentOnDestination, destinationById }
 // import { verifyToken } from './middleware/verifyToken.mjs';
 
 const app = express();
+// Define the __dirname variable in ES6 modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Middleware to serve static files
+app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 app.use(bodyParser.json());
 app.use(cors());
 const port = 4000;
