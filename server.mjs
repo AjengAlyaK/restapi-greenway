@@ -21,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware to serve static files
-app.use('/public', express.static(path.join(__dirname, '..', 'public')));
+app.use('public', express.static(path.join(__dirname, '..', 'public')));
 app.use(bodyParser.json());
 app.use(cors());
 const port = 4000;
