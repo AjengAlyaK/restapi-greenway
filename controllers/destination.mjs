@@ -1,5 +1,5 @@
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
+import { getFirestore, setDoc, doc, addDoc, collection, getDocs, getDoc, query, where } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -144,6 +144,7 @@ export const destinationById = async (req, res) => {
             message: "ok",
             data: {
                 detailDestination: {
+                    idDestination: destinationId,
                     ...destinationData,
                     campaign: campaignData,
                     comments: comments_on_destination,

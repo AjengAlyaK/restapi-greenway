@@ -14,6 +14,7 @@ import { allReview, review } from './controllers/review.mjs';
 import { addArticle, allArticles } from './controllers/article.mjs';
 import 'firebase/firestore';
 import { addDestination, allDestination, commentOnDestination, destinationById } from './controllers/destination.mjs';
+import { addDiscussion, allDiscussion, commentOnDiscussion, discussionById } from './controllers/discussion.mjs';
 // import { verifyToken } from './middleware/verifyToken.mjs';
 
 const app = express();
@@ -101,68 +102,10 @@ app.get('/destination/:id', destinationById);
 app.post('/destination/comment', verifyToken, commentOnDestination);
 
 // Discussion
-app.post('/discussion', verifyToken, async (req, res) => {
-    const { title, body } = req.body;
-    const idUser = req.user.uid;
-    try {
-        const addDiscussion = await addDoc(collection(db, 'discussions'), {
-            idUser: idUser,
-            title: title,
-            body: body,
-            createdAt: new Date()
-        });
-        return res.status(200).json({
-            status: "success",
-            message: "ok",
-            data: {
-                discussion: {
-                    id: addDiscussion.id,
-                    idUser,
-                    title,
-                    body,
-                    createdAt: new Date()
-                }
-            }
-        });
-    } catch (error) {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        return res.status(400).json({
-            error: {
-                errorCode,
-                errorMessage
-            }
-        });
-    }
-});
-
-app.get('/discussions', async(req, res) => {
-    try {
-        const discussions =collection(db, 'discussions');
-        const discussionSnapshot = await getDocs(discussions);
-        const discussionList = discussionSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-            
-        }));
-        return res.status(200).json({
-            status: "success",
-            message: "ok",
-            data: {
-                discussions: discussionList
-            }
-        });
-    } catch (error) {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        return res.status(400).json({
-            error: {
-                errorCode,
-                errorMessage
-            }
-        });
-    }
-});
+app.post('/discussion', verifyToken, addDiscussion);
+app.get('/discussions', allDiscussion);
+app.post('/discussion/comment', verifyToken, commentOnDiscussion);
+app.get('/discussion/:id', discussionById)
 
 // See Own Profile
 app.get('/me', verifyToken, (req, res) => {
