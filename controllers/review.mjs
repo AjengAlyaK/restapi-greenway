@@ -16,16 +16,17 @@ const auth = getAuth(fireInit);
 const db = getFirestore(fireInit);
 
 export const review = async (req, res) => {
-    const { name, review, photo } = req.body;
+    const { name, review, photo, occupation } = req.body;
     // Validate required fields
-    if (!name || !review || !photo) {
-        return res.status(400).json({ error: "name, review, and photo are required." });
+    if (!name || !review || !photo || !occupation) {
+        return res.status(400).json({ error: "name, review, photo and occupation are required." });
     }
     try {
         const addReview = await addDoc(collection(db, "reviews"), {
             name: name,
             review: review,
-            photo: photo
+            photo: photo,
+            occupation: occupation
         });
         return res.status(200).json({
             status: "success",
@@ -35,7 +36,8 @@ export const review = async (req, res) => {
                     id: addReview.id,
                     name,
                     review,
-                    photo
+                    photo,
+                    occupation
                 }
             }
         });

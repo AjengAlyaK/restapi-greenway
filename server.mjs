@@ -1,6 +1,7 @@
 import express from 'express';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import { format } from 'date-fns';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import { initializeApp } from 'firebase/app';
@@ -142,6 +143,7 @@ app.get('/discussions', async(req, res) => {
         const discussionList = discussionSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
+            
         }));
         return res.status(200).json({
             status: "success",
