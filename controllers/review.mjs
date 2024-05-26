@@ -25,8 +25,7 @@ export const review = async (req, res) => {
         const addReview = await addDoc(collection(db, "reviews"), {
             name: name,
             review: review,
-            photo: photo,
-            occupation: occupation
+            photo: photo
         });
         return res.status(200).json({
             status: "success",
@@ -36,8 +35,7 @@ export const review = async (req, res) => {
                     id: addReview.id,
                     name,
                     review,
-                    photo,
-                    occupation
+                    photo
                 }
             }
         });
