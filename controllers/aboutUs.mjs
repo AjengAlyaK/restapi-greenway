@@ -16,14 +16,15 @@ const auth = getAuth(fireInit);
 const db = getFirestore(fireInit);
 
 export const addAboutUs = async (req, res) => {
-    const { name, role, linkedin, github, email } = req.body;
+    const { name, role, linkedin, github, email, photo } = req.body;
     try {
         const aboutUs = addDoc(collection(db, "about_us"),  {
             name: name,
             role: role,
             linkedin: linkedin,
             github: github,
-            email: email
+            email: email,
+            photo: photo
         });
         return res.status(200).json({
             status: "success",
@@ -35,7 +36,8 @@ export const addAboutUs = async (req, res) => {
                     role: role,
                     linkedin: linkedin,
                     github: github,
-                    email: email
+                    email: email,
+                    photo: photo
                 }
             }
         });
