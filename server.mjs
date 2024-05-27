@@ -15,6 +15,7 @@ import { addArticle, allArticles } from './controllers/article.mjs';
 import 'firebase/firestore';
 import { addDestination, allDestination, commentOnDestination, destinationById } from './controllers/destination.mjs';
 import { addDiscussion, allDiscussion, commentOnDiscussion, discussionById } from './controllers/discussion.mjs';
+import { addAboutUs, allAboutUs } from './controllers/aboutUs.mjs';
 // import { verifyToken } from './middleware/verifyToken.mjs';
 
 const app = express();
@@ -105,7 +106,11 @@ app.post('/destination/comment', verifyToken, commentOnDestination);
 app.post('/discussion', verifyToken, addDiscussion);
 app.get('/discussions', allDiscussion);
 app.post('/discussion/comment', verifyToken, commentOnDiscussion);
-app.get('/discussion/:id', discussionById)
+app.get('/discussion/:id', discussionById);
+
+// About Us
+app.post('/about-us', addAboutUs);
+app.get('/about-us', allAboutUs);
 
 // See Own Profile
 app.get('/me', verifyToken, (req, res) => {

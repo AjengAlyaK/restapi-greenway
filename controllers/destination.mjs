@@ -95,8 +95,14 @@ export const allDestination = async (req, res) => {
             data: resList
         });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
     }
 };
 
