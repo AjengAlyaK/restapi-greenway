@@ -16,12 +16,13 @@ const auth = getAuth(fireInit);
 const db = getFirestore(fireInit);
 
 export const addDiscussion = async (req, res) => {
-    const { title, body } = req.body;
+    const { title, category, body } = req.body;
     const idUser = req.user.uid;
     try {
         const addDiscussion = await addDoc(collection(db, 'discussions'), {
             idUser: idUser,
             title: title,
+            category: category,
             body: body,
             createdAt: new Date()
         });
@@ -33,6 +34,7 @@ export const addDiscussion = async (req, res) => {
                     id: addDiscussion.id,
                     idUser,
                     title,
+                    category,
                     body,
                     createdAt: new Date()
                 }
@@ -70,6 +72,7 @@ export const allDiscussion = async(req, res) => {
                 id: doc.id,
                 idUser: data.idUser,
                 title: data.title,
+                category: data.category,
                 body: data.body,
                 createdAt: formattedCreatedAt
             };
@@ -117,6 +120,7 @@ export const discussionById = async (req, res) => {
             id: discussionDoc.id,
             idUser: data.idUser,
             title: data.title,
+            category: data.category,
             body: data.body,
             createdAt: formattedCreatedAt 
         };
