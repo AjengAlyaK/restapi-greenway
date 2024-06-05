@@ -7,14 +7,14 @@ import cors from 'cors';
 import { initializeApp } from 'firebase/app';
 import admin from 'firebase-admin';
 import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { getFirestore, collection, getDocs, setDoc, doc, addDoc, getDoc, query, where } from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs, setDoc, doc, addDoc, getDoc, query, where, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore/lite';
 import { register, login, logout } from './controllers/auth.mjs';
 import { addCampaign, allCampaign, campaignById } from './controllers/campaign.mjs';
 import { allReview, review } from './controllers/review.mjs';
 import { addArticle, allArticles } from './controllers/article.mjs';
 import 'firebase/firestore';
 import { addDestination, allDestination, commentOnDestination, destinationById } from './controllers/destination.mjs';
-import { addDiscussion, allDiscussion, commentOnDiscussion, discussionById } from './controllers/discussion.mjs';
+import { addDiscussion, allDiscussion, commentOnDiscussion, discussionById, downVotesOnDiscussion, netralVotesOnDiscussion, upVotesOnDiscussion } from './controllers/discussion.mjs';
 import { addAboutUs, allAboutUs } from './controllers/aboutUs.mjs';
 // import { verifyToken } from './middleware/verifyToken.mjs';
 
@@ -105,6 +105,9 @@ app.post('/destination/comment', verifyToken, commentOnDestination);
 // Discussion
 app.post('/discussion', verifyToken, addDiscussion);
 app.get('/discussions', allDiscussion);
+app.post('/discussion/:id/up-votes', verifyToken, upVotesOnDiscussion);
+app.post('/discussion/:id/down-votes', verifyToken, downVotesOnDiscussion);
+app.post('/discussion/:id/netral-votes', verifyToken, netralVotesOnDiscussion);
 app.post('/discussion/comment', verifyToken, commentOnDiscussion);
 app.get('/discussion/:id', discussionById);
 
@@ -118,7 +121,8 @@ app.get('/me', verifyToken, (req, res) => {
         status: "success",
         message: "ok",
         data: {
-            user: req.user
+            user: req.user.name,
+            id: req.user.uid
         }
     });
 });
