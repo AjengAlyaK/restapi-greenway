@@ -1,5 +1,5 @@
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, collection, getDocs, getDoc, query, where } from 'firebase/firestore/lite';
+import { getFirestore, setDoc, doc, addDoc, collection, getDocs, getDoc, query, where, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -18,12 +18,16 @@ const db = getFirestore(fireInit);
 export const addDiscussion = async (req, res) => {
     const { title, category, body } = req.body;
     const idUser = req.user.uid;
+    const upVotesBy = [];
+    const downVotesBy = [];
     try {
         const addDiscussion = await addDoc(collection(db, 'discussions'), {
             idUser: idUser,
             title: title,
             category: category,
             body: body,
+            upVotesBy: upVotesBy,
+            downVotesBy: downVotesBy,
             createdAt: new Date()
         });
         return res.status(200).json({
@@ -36,6 +40,8 @@ export const addDiscussion = async (req, res) => {
                     title,
                     category,
                     body,
+                    upVotesBy,
+                    downVotesBy,
                     createdAt: new Date()
                 }
             }
@@ -92,6 +98,153 @@ export const allDiscussion = async(req, res) => {
                 errorCode,
                 errorMessage
             }
+        });
+    }
+};
+
+export const upVotesOnDiscussion = async (req, res) => {
+    const discussionId = req.params.id;
+
+    if (!discussionId) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Discussion ID is required."
+        });
+    }
+
+    const discussionRef = doc(db, "discussions", discussionId);
+    const voter = {
+        id: req.user.uid,
+        name: req.user.name
+    }
+
+    try {
+        const discussionDoc = await getDoc(discussionRef);
+
+        if (!discussionDoc.exists()) {
+            return res.status(404).json({
+                status: "fail",
+                message: "Discussion not found."
+            });
+        }
+
+        await updateDoc(discussionRef, {
+            upVotesBy: arrayUnion(voter),
+            downVotesBy: arrayRemove(voter)
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "Up vote recorded successfully.",
+            data: {
+                id: req.user.uid,
+                name: req.user.name
+            }
+        });
+    } catch (error) {
+        console.error("Error updating document: ", error);
+        res.status(500).json({
+            status: "error",
+            message: "Internal server error.",
+            error: error.message
+        });
+    }
+};
+
+export const downVotesOnDiscussion = async(req, res) => {
+    const discussionId = req.params.id;
+
+    if (!discussionId) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Discussion ID is required."
+        });
+    }
+
+    const discussionRef = doc(db, "discussions", discussionId);
+    const voter = {
+        id: req.user.uid,
+        name: req.user.name
+    }
+
+    try {
+        const discussionDoc = await getDoc(discussionRef);
+
+        if (!discussionDoc.exists()) {
+            return res.status(404).json({
+                status: "fail",
+                message: "Discussion not found."
+            });
+        }
+
+        await updateDoc(discussionRef, {
+            downVotesBy: arrayUnion(voter),
+            upVotesBy: arrayRemove(voter)
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "Down ote recorded successfully.",
+            data: {
+                id: req.user.uid,
+                name: req.user.name
+            }
+        });
+    } catch (error) {
+        console.error("Error updating document: ", error);
+        res.status(500).json({
+            status: "error",
+            message: "Internal server error.",
+            error: error.message
+        });
+    }
+};
+
+export const netralVotesOnDiscussion = async (req, res) => {
+    const discussionId = req.params.id;
+
+    if (!discussionId) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Discussion ID is required."
+        });
+    }
+
+    const discussionRef = doc(db, "discussions", discussionId);
+    const voter = {
+        id: req.user.uid,
+        name: req.user.name
+    }
+
+    try {
+        const discussionDoc = await getDoc(discussionRef);
+
+        if (!discussionDoc.exists()) {
+            return res.status(404).json({
+                status: "fail",
+                message: "Discussion not found."
+            });
+        }
+
+        await updateDoc(discussionRef, {
+            upVotesBy: arrayRemove(voter),
+            downVotesBy: arrayRemove(voter)
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "Netral vote recorded successfully.",
+            data: {
+                id: req.user.uid,
+                name: req.user.name
+            }
+        });
+    } catch (error) {
+        console.error("Error updating document: ", error);
+        res.status(500).json({
+            status: "error",
+            message: "Internal server error.",
+            error: error.message
         });
     }
 };
@@ -170,6 +323,12 @@ export const commentOnDiscussion = async (req, res) => {
     }
     const idUser = req.user.uid;
     try {
+        const discussionRef = doc(db, "discussions", idDiscussion);
+        const discussionDoc = await getDoc(discussionRef);
+
+        if (!discussionDoc.exists()) {
+            return res.status(404).json({ error: "Discussion not found." });
+        }
         const addCommentOnDiscussion = await addDoc(collection(db, 'comment_on_discussion'), {
             idDiscussion: idDiscussion,
             idUser: idUser,
@@ -199,5 +358,151 @@ export const commentOnDiscussion = async (req, res) => {
             }
         });
     }
-    
+};
+
+export const upVotesCommentOnDiscussion = async (req, res) => {
+    const commentOnDiscussionId = req.params.id;
+
+    if (!commentOnDiscussionId) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Comment on discussion ID is required."
+        });
+    }
+
+    const commentOnDiscussionRef = doc(db, "comment_on_discussion", commentOnDiscussionId);
+    const voter = {
+        id: req.user.uid,
+        name: req.user.name
+    }
+
+    try {
+        const commentOnDiscussionDoc = await getDoc(commentOnDiscussionRef);
+
+        if (!commentOnDiscussionDoc.exists()) {
+            return res.status(404).json({
+                status: "fail",
+                message: "Comment on discussion not found."
+            });
+        }
+
+        await updateDoc(commentOnDiscussionRef, {
+            upVotesBy: arrayUnion(voter),
+            downVotesBy: arrayRemove(voter)
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "Up vote recorded successfully.",
+            data: {
+                id: req.user.uid,
+                name: req.user.name
+            }
+        });
+    } catch (error) {
+        console.error("Error updating document: ", error);
+        res.status(500).json({
+            status: "error",
+            message: "Internal server error.",
+            error: error.message
+        });
+    }
+};
+
+export const downVotesCommentOnDiscussion = async(req, res) => {
+    const commentOnDiscussionId = req.params.id;
+
+    if (!commentOnDiscussionId) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Comment on discussion ID is required."
+        });
+    }
+
+    const commentOnDiscussionRef = doc(db, "comment_on_discussion", commentOnDiscussionId);
+    const voter = {
+        id: req.user.uid,
+        name: req.user.name
+    }
+
+    try {
+        const commentOnDiscussionDoc = await getDoc(commentOnDiscussionRef);
+
+        if (!commentOnDiscussionDoc.exists()) {
+            return res.status(404).json({
+                status: "fail",
+                message: "Comment on discussion not found."
+            });
+        }
+
+        await updateDoc(commentOnDiscussionRef, {
+            downVotesBy: arrayUnion(voter),
+            upVotesBy: arrayRemove(voter)
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "Down vote recorded successfully.",
+            data: {
+                id: req.user.uid,
+                name: req.user.name
+            }
+        });
+    } catch (error) {
+        console.error("Error updating document: ", error);
+        res.status(500).json({
+            status: "error",
+            message: "Internal server error.",
+            error: error.message
+        });
+    }
+};
+
+export const netralVotesCommentOnDiscussion = async (req, res) => {
+    const commentOnDiscussionId = req.params.id;
+
+    if (!commentOnDiscussionId) {
+        return res.status(400).json({
+            status: "fail",
+            message: "Discussion ID is required."
+        });
+    }
+
+    const commentOnDiscussionRef = doc(db, "comment_on_discussion", commentOnDiscussionId);
+    const voter = {
+        id: req.user.uid,
+        name: req.user.name
+    }
+
+    try {
+        const commentOnDiscussionDoc = await getDoc(commentOnDiscussionRef);
+
+        if (!commentOnDiscussionDoc.exists()) {
+            return res.status(404).json({
+                status: "fail",
+                message: "Discussion not found."
+            });
+        }
+
+        await updateDoc(commentOnDiscussionRef, {
+            upVotesBy: arrayRemove(voter),
+            downVotesBy: arrayRemove(voter)
+        });
+
+        res.status(200).json({
+            status: "success",
+            message: "Up vote recorded successfully.",
+            data: {
+                id: req.user.uid,
+                name: req.user.name
+            }
+        });
+    } catch (error) {
+        console.error("Error updating document: ", error);
+        res.status(500).json({
+            status: "error",
+            message: "Internal server error.",
+            error: error.message
+        });
+    }
 };
