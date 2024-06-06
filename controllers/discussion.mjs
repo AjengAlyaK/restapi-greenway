@@ -81,7 +81,7 @@ export const allDiscussion = async (req, res) => {
                 category: data.category,
                 body: data.body,
                 upVotesBy: data.upVotesBy,
-                downVotesBy: downVotesBy,
+                downVotesBy: data.downVotesBy,
                 createdAt: formattedCreatedAt
             };
         });
