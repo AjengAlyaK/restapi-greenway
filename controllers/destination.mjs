@@ -171,6 +171,7 @@ export const destinationById = async (req, res) => {
 
 export const commentOnDestination = async (req, res) => {
     const { idDestination, comment } = req.body;
+    const name = req.user.name;
     if (!idDestination || !comment ) {
         return res.status(400).json({ error: "idDestination and comment are required are required." });
     }
@@ -179,6 +180,7 @@ export const commentOnDestination = async (req, res) => {
         const addCommentOnDestination = await addDoc(collection(db, 'comment_on_destination'), {
             idDestination: idDestination,
             idUser: idUser,
+            name: name,
             comment: comment,
             createdAt: new Date()
         });
@@ -190,6 +192,7 @@ export const commentOnDestination = async (req, res) => {
                     id: addCommentOnDestination.id,
                     idDestination,
                     idUser,
+                    name: name,
                     comment,
                     createdAt: new Date()
                 }

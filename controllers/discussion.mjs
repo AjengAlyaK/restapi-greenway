@@ -62,9 +62,9 @@ export const allDiscussion = async (req, res) => {
     try {
         const discussions = collection(db, 'discussions');
         const discussionSnapshot = await getDocs(discussions);
-        const discussionList = discussionSnapshot.docs.map(doc => {
-            const data = doc.data();
-            const createdAt = data.createdAt;
+        const discussionList = await Promise.all(discussionSnapshot.docs.map(async (doc) => {
+            const discussionData = doc.data();
+            const createdAt = discussionData.createdAt;
             let formattedCreatedAt = '';
 
             if (createdAt && createdAt.seconds) {
@@ -74,17 +74,31 @@ export const allDiscussion = async (req, res) => {
                 formattedCreatedAt = date.toISOString();
             }
 
+            // Take all comment on destination that has same idDiscussion
+            const comments_on_discussion = [];
+            const commentsRef = collection(db, "comment_on_discussion");
+            const q = query(commentsRef, where("idDiscussion", "==", doc.id));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((commentDoc) => {
+                const commentData = commentDoc.data();
+                const createdAt = commentData.createdAt;
+                const date = createdAt.toDate();
+                commentData.createdAt = date.toISOString();
+                comments_on_discussion.push(commentData);
+            });
+
             return {
                 id: doc.id,
-                idUser: data.idUser,
-                title: data.title,
-                category: data.category,
-                body: data.body,
-                upVotesBy: data.upVotesBy,
-                downVotesBy: data.downVotesBy,
-                createdAt: formattedCreatedAt
+                idUser: discussionData.idUser,
+                title: discussionData.title,
+                category: discussionData.category,
+                body: discussionData.body,
+                upVotesBy: discussionData.upVotesBy,
+                downVotesBy: discussionData.downVotesBy,
+                createdAt: formattedCreatedAt,
+                comments: comments_on_discussion.length
             };
-        });
+        }));
         return res.status(200).json({
             status: "success",
             message: "ok",
@@ -93,12 +107,12 @@ export const allDiscussion = async (req, res) => {
             }
         });
     } catch (error) {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        return res.status(400).json({
+        const errorCode = error.code || 500;
+        const errorMessage = error.message || "Internal Server Error";
+        return res.status(errorCode).json({
             error: {
-                errorCode,
-                errorMessage
+                code: errorCode,
+                message: errorMessage
             }
         });
     }
@@ -286,6 +300,8 @@ export const discussionById = async (req, res) => {
             title: data.title,
             category: data.category,
             body: data.body,
+            upVotesBy: data.upVotesBy,
+            downVotesBy: data.downVotesBy,
             createdAt: formattedCreatedAt
         };
 
@@ -329,6 +345,7 @@ export const discussionById = async (req, res) => {
 
 export const commentOnDiscussion = async (req, res) => {
     const { idDiscussion, comment } = req.body;
+    const name = req.user.name;
     if (!idDiscussion || !comment) {
         return res.status(400).json({ error: "idDiscussion and comment are required are required." });
     }
@@ -343,6 +360,7 @@ export const commentOnDiscussion = async (req, res) => {
         const addCommentOnDiscussion = await addDoc(collection(db, 'comment_on_discussion'), {
             idDiscussion: idDiscussion,
             idUser: idUser,
+            name: name,
             comment: comment,
             createdAt: new Date()
         });
@@ -354,6 +372,7 @@ export const commentOnDiscussion = async (req, res) => {
                     id: addCommentOnDiscussion.id,
                     idDiscussion,
                     idUser,
+                    name: name, 
                     comment,
                     createdAt: new Date()
                 }
@@ -481,7 +500,7 @@ export const netralVotesCommentOnDiscussion = async (req, res) => {
     if (!commentOnDiscussionId) {
         return res.status(400).json({
             status: "fail",
-            message: "Discussion ID is required."
+            message: "Comment on discussion ID is required."
         });
     }
 
@@ -497,7 +516,7 @@ export const netralVotesCommentOnDiscussion = async (req, res) => {
         if (!commentOnDiscussionDoc.exists()) {
             return res.status(404).json({
                 status: "fail",
-                message: "Discussion not found."
+                message: "Comment on discussion not found."
             });
         }
 
