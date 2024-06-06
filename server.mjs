@@ -14,9 +14,8 @@ import { allReview, review } from './controllers/review.mjs';
 import { addArticle, allArticles } from './controllers/article.mjs';
 import 'firebase/firestore';
 import { addDestination, allDestination, commentOnDestination, destinationById } from './controllers/destination.mjs';
-import { addDiscussion, allDiscussion, commentOnDiscussion, discussionById, downVotesOnDiscussion, netralVotesOnDiscussion, upVotesOnDiscussion } from './controllers/discussion.mjs';
+import { addDiscussion, allDiscussion, commentOnDiscussion, discussionById, downVotesCommentOnDiscussion, downVotesOnDiscussion, netralVotesCommentOnDiscussion, netralVotesOnDiscussion, upVotesCommentOnDiscussion, upVotesOnDiscussion } from './controllers/discussion.mjs';
 import { addAboutUs, allAboutUs } from './controllers/aboutUs.mjs';
-// import { verifyToken } from './middleware/verifyToken.mjs';
 
 const app = express();
 app.use(express.static('public'));
@@ -110,6 +109,9 @@ app.post('/discussion/:id/down-votes', verifyToken, downVotesOnDiscussion);
 app.post('/discussion/:id/netral-votes', verifyToken, netralVotesOnDiscussion);
 app.post('/discussion/comment', verifyToken, commentOnDiscussion);
 app.get('/discussion/:id', discussionById);
+app.post('/discussion/comment/:id/up-votes', verifyToken, upVotesCommentOnDiscussion);
+app.post('/discussion/comment/:id/down-votes', verifyToken, downVotesCommentOnDiscussion);
+app.post('/discussion/comment/:id/netral-votes', verifyToken, netralVotesCommentOnDiscussion);
 
 // About Us
 app.post('/about-us', addAboutUs);
