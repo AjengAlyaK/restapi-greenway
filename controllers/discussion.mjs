@@ -58,9 +58,9 @@ export const addDiscussion = async (req, res) => {
     }
 };
 
-export const allDiscussion = async(req, res) => {
+export const allDiscussion = async (req, res) => {
     try {
-        const discussions =collection(db, 'discussions');
+        const discussions = collection(db, 'discussions');
         const discussionSnapshot = await getDocs(discussions);
         const discussionList = discussionSnapshot.docs.map(doc => {
             const data = doc.data();
@@ -135,10 +135,13 @@ export const upVotesOnDiscussion = async (req, res) => {
 
         res.status(200).json({
             status: "success",
-            message: "Up vote recorded successfully.",
+            message: "Discussion upvoted",
             data: {
-                id: req.user.uid,
-                name: req.user.name
+                vote: {
+                    discussionId: discussionId,
+                    userId: req.user.uid,
+                    name: req.user.name
+                }
             }
         });
     } catch (error) {
@@ -151,7 +154,7 @@ export const upVotesOnDiscussion = async (req, res) => {
     }
 };
 
-export const downVotesOnDiscussion = async(req, res) => {
+export const downVotesOnDiscussion = async (req, res) => {
     const discussionId = req.params.id;
 
     if (!discussionId) {
@@ -183,11 +186,14 @@ export const downVotesOnDiscussion = async(req, res) => {
         });
 
         res.status(200).json({
-            status: "success",
-            message: "Down ote recorded successfully.",
+            "status": "success",
+            "message": "Discussion downvoted",
             data: {
-                id: req.user.uid,
-                name: req.user.name
+                vote: {
+                    discussionId: discussionId,
+                    userId: req.user.uid,
+                    name: req.user.name
+                }
             }
         });
     } catch (error) {
@@ -232,11 +238,14 @@ export const netralVotesOnDiscussion = async (req, res) => {
         });
 
         res.status(200).json({
-            status: "success",
-            message: "Netral vote recorded successfully.",
+            "status": "success",
+            "message": "Discussion netralvoted",
             data: {
-                id: req.user.uid,
-                name: req.user.name
+                vote: {
+                    discussionId: discussionId,
+                    userId: req.user.uid,
+                    name: req.user.name
+                }
             }
         });
     } catch (error) {
@@ -275,7 +284,7 @@ export const discussionById = async (req, res) => {
             title: data.title,
             category: data.category,
             body: data.body,
-            createdAt: formattedCreatedAt 
+            createdAt: formattedCreatedAt
         };
 
         // Take all comment on destination that has same idDiscussion
@@ -318,7 +327,7 @@ export const discussionById = async (req, res) => {
 
 export const commentOnDiscussion = async (req, res) => {
     const { idDiscussion, comment } = req.body;
-    if (!idDiscussion || !comment ) {
+    if (!idDiscussion || !comment) {
         return res.status(400).json({ error: "idDiscussion and comment are required are required." });
     }
     const idUser = req.user.uid;
@@ -392,11 +401,14 @@ export const upVotesCommentOnDiscussion = async (req, res) => {
         });
 
         res.status(200).json({
-            status: "success",
-            message: "Up vote recorded successfully.",
+            "status": "success",
+            "message": "Comment on discussion upvoted",
             data: {
-                id: req.user.uid,
-                name: req.user.name
+                vote: {
+                    discussionId: commentOnDiscussionId,
+                    userId: req.user.uid,
+                    name: req.user.name
+                }
             }
         });
     } catch (error) {
@@ -409,7 +421,7 @@ export const upVotesCommentOnDiscussion = async (req, res) => {
     }
 };
 
-export const downVotesCommentOnDiscussion = async(req, res) => {
+export const downVotesCommentOnDiscussion = async (req, res) => {
     const commentOnDiscussionId = req.params.id;
 
     if (!commentOnDiscussionId) {
@@ -441,11 +453,14 @@ export const downVotesCommentOnDiscussion = async(req, res) => {
         });
 
         res.status(200).json({
-            status: "success",
-            message: "Down vote recorded successfully.",
+            "status": "success",
+            "message": "Comment on discussion downvoted",
             data: {
-                id: req.user.uid,
-                name: req.user.name
+                vote: {
+                    discussionId: commentOnDiscussionId,
+                    userId: req.user.uid,
+                    name: req.user.name
+                }
             }
         });
     } catch (error) {
@@ -490,11 +505,14 @@ export const netralVotesCommentOnDiscussion = async (req, res) => {
         });
 
         res.status(200).json({
-            status: "success",
-            message: "Up vote recorded successfully.",
+            "status": "success",
+            "message": "Comment on discussion netralvoted",
             data: {
-                id: req.user.uid,
-                name: req.user.name
+                vote: {
+                    discussionId: commentOnDiscussionId,
+                    userId: req.user.uid,
+                    name: req.user.name
+                }
             }
         });
     } catch (error) {
