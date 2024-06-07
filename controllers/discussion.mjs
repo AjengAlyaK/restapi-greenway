@@ -301,7 +301,16 @@ export const discussionById = async (req, res) => {
             });
         }
         const data = discussionDoc.data();
+        const idUser = data.idUser;
         const createdAt = data.createdAt;
+        const userRef = doc(db, 'users', idUser);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        const userData = userDoc.data();
+        const name = userData.displayName;
+        const photoURL = userData.photoURL;
 
         // Format the createdAt field if it exists
         let formattedCreatedAt = '';
@@ -312,13 +321,17 @@ export const discussionById = async (req, res) => {
 
         const discussionData = {
             id: discussionDoc.id,
-            idUser: data.idUser,
             title: data.title,
             category: data.category,
             body: data.body,
             upVotesBy: data.upVotesBy,
             downVotesBy: data.downVotesBy,
-            createdAt: formattedCreatedAt
+            createdAt: formattedCreatedAt,
+            owner: {
+                idUser: data.idUser,
+                name: name,
+                photo: photoURL,
+            }
         };
 
         // Take all comment on destination that has same idDiscussion
