@@ -17,6 +17,9 @@ const db = getFirestore(fireInit);
 
 export const register = async (req, res) => {
     const { name, email, password } = req.body;
+    // const photoURL = `https://ui-avatars.com/api/?name=${name}&background=random`;
+    const formattedName = name.replace(/\s+/g, '+');
+    const photoURL = `https://ui-avatars.com/api/?name=${formattedName}&background=random`;
 
     if (!name || !email || !password) {
         return res.status(400).json({ error: "Please provide name, email, and password" });
@@ -25,11 +28,12 @@ export const register = async (req, res) => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        await updateProfile(auth.currentUser, { displayName: name });
+        await updateProfile(auth.currentUser, { displayName: name, photoURL: photoURL });
         await setDoc(doc(db, 'users', user.uid), {
             // uid: user.uid,
             email: user.email,
             displayName: name,
+            photoURL: photoURL,
             createdAt: new Date(),
         });
         return res.status(200).json({
@@ -40,6 +44,7 @@ export const register = async (req, res) => {
                     id: user.uid,
                     name: name,
                     email: user.email,
+                    photo: photoURL
                 }
             }
         });

@@ -171,17 +171,27 @@ export const destinationById = async (req, res) => {
 
 export const commentOnDestination = async (req, res) => {
     const { idDestination, comment } = req.body;
-    const name = req.user.name;
+    // const name = req.user.name;
+    const idUser = req.user.uid;
+
     if (!idDestination || !comment ) {
         return res.status(400).json({ error: "idDestination and comment are required are required." });
     }
-    const idUser = req.user.uid;
     try {
+        const userRef = doc(db, 'users', idUser);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        const userData = userDoc.data();
+        const name = userData.displayName;
+        const photoURL = userData.photoURL;
         const addCommentOnDestination = await addDoc(collection(db, 'comment_on_destination'), {
             idDestination: idDestination,
             idUser: idUser,
             name: name,
             comment: comment,
+            photo: photoURL,
             createdAt: new Date()
         });
         return res.status(200).json({
@@ -194,6 +204,7 @@ export const commentOnDestination = async (req, res) => {
                     idUser,
                     name: name,
                     comment,
+                    photo: photoURL,
                     createdAt: new Date()
                 }
             }

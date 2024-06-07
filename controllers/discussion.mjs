@@ -21,8 +21,18 @@ export const addDiscussion = async (req, res) => {
     const upVotesBy = [];
     const downVotesBy = [];
     try {
+        const userRef = doc(db, 'users', idUser);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        const userData = userDoc.data();
+        const name = userData.displayName;
+        const photoURL = userData.photoURL;
         const addDiscussion = await addDoc(collection(db, 'discussions'), {
             idUser: idUser,
+            name: name,
+            photo: photoURL,
             title: title,
             category: category,
             body: body,
@@ -37,11 +47,14 @@ export const addDiscussion = async (req, res) => {
                 discussion: {
                     id: addDiscussion.id,
                     idUser,
+                    name: name,
+                    photo: photoURL,
                     title,
                     category,
                     body,
                     upVotesBy,
                     downVotesBy,
+                    comments: 0,
                     createdAt: new Date()
                 }
             }
@@ -64,6 +77,7 @@ export const allDiscussion = async (req, res) => {
         const discussionSnapshot = await getDocs(discussions);
         const discussionList = await Promise.all(discussionSnapshot.docs.map(async (doc) => {
             const discussionData = doc.data();
+            console.log(discussionData);
             const createdAt = discussionData.createdAt;
             let formattedCreatedAt = '';
 
@@ -90,6 +104,8 @@ export const allDiscussion = async (req, res) => {
             return {
                 id: doc.id,
                 idUser: discussionData.idUser,
+                name: discussionData.name,
+                photo: discussionData.photo,
                 title: discussionData.title,
                 category: discussionData.category,
                 body: discussionData.body,
@@ -312,10 +328,11 @@ export const discussionById = async (req, res) => {
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
             const data = doc.data();
+            console.log(data);
             const createdAt = data.createdAt;
             const date = createdAt.toDate();
             data.createdAt = date.toISOString();
-            // console.log("data => ", data);
+            data.id = doc.id;
             comments_on_discussion.push(data);
         });
 
@@ -345,11 +362,21 @@ export const discussionById = async (req, res) => {
 
 export const commentOnDiscussion = async (req, res) => {
     const { idDiscussion, comment } = req.body;
-    const name = req.user.name;
+    // const name = req.user.name;
     if (!idDiscussion || !comment) {
         return res.status(400).json({ error: "idDiscussion and comment are required are required." });
     }
     const idUser = req.user.uid;
+    const userRef = doc(db, 'users', idUser);
+    const userDoc = await getDoc(userRef);
+    if (!userDoc.exists()) {
+        return res.status(404).json({ error: "User not found." });
+    }
+    const userData = userDoc.data();
+    const name = userData.displayName;
+    const photoURL = userData.photoURL;
+    const upVotesBy = [];
+    const downVotesBy = [];
     try {
         const discussionRef = doc(db, "discussions", idDiscussion);
         const discussionDoc = await getDoc(discussionRef);
@@ -361,6 +388,7 @@ export const commentOnDiscussion = async (req, res) => {
             idDiscussion: idDiscussion,
             idUser: idUser,
             name: name,
+            photo: photoURL,
             comment: comment,
             createdAt: new Date()
         });
@@ -371,10 +399,15 @@ export const commentOnDiscussion = async (req, res) => {
                 comment: {
                     id: addCommentOnDiscussion.id,
                     idDiscussion,
-                    idUser,
-                    name: name, 
                     comment,
-                    createdAt: new Date()
+                    upVotesBy: upVotesBy,
+                    downVotesBy: downVotesBy,
+                    createdAt: new Date(),
+                    owner: {
+                        idUser,
+                        name: name,
+                        photo: photoURL,
+                    }
                 }
             }
         });
