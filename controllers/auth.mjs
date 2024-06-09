@@ -1,5 +1,5 @@
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc } from 'firebase/firestore/lite';
+import { getFirestore, setDoc, doc, getDoc } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -72,13 +72,23 @@ export const login = async (req, res) => {
 
         const user = userCredential.user;
         const accessToken = user.stsTokenManager.accessToken;
+        const id = user.uid;
+        const userRef = doc(db, 'users', id);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        const userData = userDoc.data();
+        const photoURL = userData.photoURL;
 
         // const displayName = user.displayName;
         return res.status(200).json({
             status: "success",
             message: "ok",
             data: {
+                id: id,
                 name: user.displayName,
+                photo: photoURL,
                 token: accessToken
             }
         });
