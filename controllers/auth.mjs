@@ -86,9 +86,9 @@ export const login = async (req, res) => {
             status: "success",
             message: "ok",
             data: {
-                id: id,
-                name: user.displayName,
-                photo: photoURL,
+                // id: id,
+                // name: user.displayName,
+                // photo: photoURL,
                 token: accessToken
             }
         });
