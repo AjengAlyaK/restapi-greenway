@@ -77,7 +77,7 @@ export const allDiscussion = async (req, res) => {
         const discussionSnapshot = await getDocs(discussions);
         const discussionList = await Promise.all(discussionSnapshot.docs.map(async (doc) => {
             const discussionData = doc.data();
-            console.log(discussionData);
+            // console.log(discussionData);
             const createdAt = discussionData.createdAt;
             let formattedCreatedAt = '';
 
@@ -101,6 +101,9 @@ export const allDiscussion = async (req, res) => {
                 comments_on_discussion.push(commentData);
             });
 
+            const upVotesByIds = discussionData.upVotesBy.map(voter => voter.id);
+            console.log(upVotesByIds);
+
             return {
                 id: doc.id,
                 idUser: discussionData.idUser,
@@ -109,7 +112,8 @@ export const allDiscussion = async (req, res) => {
                 title: discussionData.title,
                 category: discussionData.category,
                 body: discussionData.body,
-                upVotesBy: discussionData.upVotesBy,
+                // upVotesBy: discussionData.upVotesBy,
+                upVotesBy: upVotesByIds,
                 downVotesBy: discussionData.downVotesBy,
                 createdAt: formattedCreatedAt,
                 comments: comments_on_discussion.length
@@ -145,9 +149,12 @@ export const upVotesOnDiscussion = async (req, res) => {
     }
 
     const discussionRef = doc(db, "discussions", discussionId);
+    
     const voter = {
         id: req.user.uid,
         name: req.user.name
+        // id: userId,
+        // name: name
     }
 
     try {
