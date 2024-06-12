@@ -102,7 +102,8 @@ export const allDiscussion = async (req, res) => {
             });
 
             const upVotesByIds = discussionData.upVotesBy.map(voter => voter.id);
-            console.log(upVotesByIds);
+            const downVotesByIds = discussionData.downVotesBy.map(voter => voter.id);
+            // console.log(upVotesByIds);
 
             return {
                 id: doc.id,
@@ -114,7 +115,7 @@ export const allDiscussion = async (req, res) => {
                 body: discussionData.body,
                 // upVotesBy: discussionData.upVotesBy,
                 upVotesBy: upVotesByIds,
-                downVotesBy: discussionData.downVotesBy,
+                downVotesBy: downVotesByIds,
                 createdAt: formattedCreatedAt,
                 comments: comments_on_discussion.length
             };
@@ -149,7 +150,7 @@ export const upVotesOnDiscussion = async (req, res) => {
     }
 
     const discussionRef = doc(db, "discussions", discussionId);
-    
+
     const voter = {
         id: req.user.uid,
         name: req.user.name
@@ -307,9 +308,13 @@ export const discussionById = async (req, res) => {
                 error: "Discussion not found"
             });
         }
+
         const data = discussionDoc.data();
         const idUser = data.idUser;
         const createdAt = data.createdAt;
+        const upVotesByIds = data.upVotesBy.map(voter => voter.id);
+        const downVotesByIds = data.downVotesBy.map(voter => voter.id);
+
         const userRef = doc(db, 'users', idUser);
         const userDoc = await getDoc(userRef);
         if (!userDoc.exists()) {
@@ -331,8 +336,8 @@ export const discussionById = async (req, res) => {
             title: data.title,
             category: data.category,
             body: data.body,
-            upVotesBy: data.upVotesBy,
-            downVotesBy: data.downVotesBy,
+            upVotesBy: upVotesByIds,
+            downVotesBy: downVotesByIds,
             createdAt: formattedCreatedAt,
             owner: {
                 idUser: data.idUser,
