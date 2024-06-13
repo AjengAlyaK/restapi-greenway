@@ -120,6 +120,8 @@ export const allDiscussion = async (req, res) => {
                 comments: comments_on_discussion.length
             };
         }));
+        // Sort discussionList by createdAt in descending order (newest first)
+        discussionList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         return res.status(200).json({
             status: "success",
             message: "ok",
