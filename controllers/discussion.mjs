@@ -358,6 +358,8 @@ export const discussionById = async (req, res) => {
             const date = createdAt.toDate();
             data.createdAt = date.toISOString();
             data.id = doc.id;
+            data.upVotesBy = data.upVotesBy.map(voter => voter.id);
+            data.downVotesBy = data.downVotesBy.map(voter => voter.id);
             comments_on_discussion.push(data);
         });
 
@@ -415,6 +417,8 @@ export const commentOnDiscussion = async (req, res) => {
             name: name,
             photo: photoURL,
             comment: comment,
+            upVotesBy: upVotesBy,
+            downVotesBy: downVotesBy,
             createdAt: new Date()
         });
         return res.status(200).json({
@@ -459,9 +463,10 @@ export const upVotesCommentOnDiscussion = async (req, res) => {
     }
 
     const commentOnDiscussionRef = doc(db, "comment_on_discussion", commentOnDiscussionId);
-    const voterId = req.user.uid;
-        
-    
+    const voter = {
+        id: req.user.uid,
+        name: req.user.name
+    }
 
     try {
         const commentOnDiscussionDoc = await getDoc(commentOnDiscussionRef);
@@ -474,8 +479,8 @@ export const upVotesCommentOnDiscussion = async (req, res) => {
         }
 
         await updateDoc(commentOnDiscussionRef, {
-            upVotesBy: arrayUnion(voterId),
-            downVotesBy: arrayRemove(voterId)
+            upVotesBy: arrayUnion(voter),
+            downVotesBy: arrayRemove(voter)
         });
 
         res.status(200).json({
@@ -510,8 +515,10 @@ export const downVotesCommentOnDiscussion = async (req, res) => {
     }
 
     const commentOnDiscussionRef = doc(db, "comment_on_discussion", commentOnDiscussionId);
-    const voterId = req.user.uid;
-    
+    const voter = {
+        id: req.user.uid,
+        name: req.user.name
+    }
 
     try {
         const commentOnDiscussionDoc = await getDoc(commentOnDiscussionRef);
@@ -524,8 +531,8 @@ export const downVotesCommentOnDiscussion = async (req, res) => {
         }
 
         await updateDoc(commentOnDiscussionRef, {
-            downVotesBy: arrayUnion(voterId),
-            upVotesBy: arrayRemove(voterId)
+            downVotesBy: arrayUnion(voter),
+            upVotesBy: arrayRemove(voter)
         });
 
         res.status(200).json({
@@ -560,7 +567,10 @@ export const netralVotesCommentOnDiscussion = async (req, res) => {
     }
 
     const commentOnDiscussionRef = doc(db, "comment_on_discussion", commentOnDiscussionId);
-    const voterId = req.user.uid;
+    const voter = {
+        id: req.user.uid,
+        name: req.user.name
+    }
 
     try {
         const commentOnDiscussionDoc = await getDoc(commentOnDiscussionRef);
@@ -573,8 +583,8 @@ export const netralVotesCommentOnDiscussion = async (req, res) => {
         }
 
         await updateDoc(commentOnDiscussionRef, {
-            upVotesBy: arrayRemove(voterId),
-            downVotesBy: arrayRemove(voterId)
+            upVotesBy: arrayRemove(voter),
+            downVotesBy: arrayRemove(voter)
         });
 
         res.status(200).json({
