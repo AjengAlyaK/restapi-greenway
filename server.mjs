@@ -109,7 +109,7 @@ app.post('/discussion/:id/down-votes', verifyToken, downVotesOnDiscussion);
 app.post('/discussion/:id/netral-votes', verifyToken, netralVotesOnDiscussion);
 app.post('/discussion/comment', verifyToken, commentOnDiscussion);
 app.get('/discussion/:id', discussionById);
-app.post('/discussion/:id/comment/:commentOnDiscussionId/up-votes', verifyToken, upVotesCommentOnDiscussion);
+app.post('/discussion/:id/comment/:id/up-votes', verifyToken, upVotesCommentOnDiscussion);
 app.post('/discussion/:id/comment/:id/down-votes', verifyToken, downVotesCommentOnDiscussion);
 app.post('/discussion/:id/comment/:id/netral-votes', verifyToken, netralVotesCommentOnDiscussion);
 
