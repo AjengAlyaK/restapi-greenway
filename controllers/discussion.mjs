@@ -475,8 +475,8 @@ export const upVotesCommentOnDiscussion = async (req, res) => {
         }
 
         await updateDoc(commentOnDiscussionRef, {
-            upVotesBy: arrayUnion[voter],
-            downVotesBy: arrayRemove[voter]
+            upVotesBy: [voter],
+            downVotesBy: []
         });
 
         res.status(200).json({
