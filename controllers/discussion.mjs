@@ -475,8 +475,8 @@ export const upVotesCommentOnDiscussion = async (req, res) => {
         }
 
         await updateDoc(commentOnDiscussionRef, {
-            upVotesBy: arrayUnion(voter),
-            downVotesBy: arrayRemove(voter)
+            upVotesBy: arrayUnion[voter],
+            downVotesBy: arrayRemove[voter]
         });
 
         res.status(200).json({
@@ -527,8 +527,8 @@ export const downVotesCommentOnDiscussion = async (req, res) => {
         }
 
         await updateDoc(commentOnDiscussionRef, {
-            downVotesBy: arrayUnion(voter),
-            upVotesBy: arrayRemove(voter)
+            downVotesBy: arrayUnion[voter],
+            upVotesBy: arrayRemove[voter]
         });
 
         res.status(200).json({
@@ -579,8 +579,8 @@ export const netralVotesCommentOnDiscussion = async (req, res) => {
         }
 
         await updateDoc(commentOnDiscussionRef, {
-            upVotesBy: arrayRemove(voter),
-            downVotesBy: arrayRemove(voter)
+            upVotesBy: arrayRemove[voter],
+            downVotesBy: arrayRemove[voter]
         });
 
         res.status(200).json({
