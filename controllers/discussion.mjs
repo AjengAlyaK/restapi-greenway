@@ -91,7 +91,7 @@ export const allDiscussion = async (req, res) => {
             // Take all comment on destination that has same idDiscussion
             const comments_on_discussion = [];
             const commentsRef = collection(db, "comment_on_discussion");
-            const q = query(commentsRef, where("idDiscussion", "==", doc.id));
+            const q = query(commentsRef, where("discussionId", "==", doc.id));
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((commentDoc) => {
                 const commentData = commentDoc.data();
