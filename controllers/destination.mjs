@@ -134,7 +134,7 @@ export const destinationById = async (req, res) => {
         // get all comment where idDestination is same as param
         const comments_on_destination = []
         const commentsRef = collection(db, "comment_on_destination");
-        const q = query(commentsRef, where("idDestination", "==", destinationId));
+        const q = query(commentsRef, where("destinationId", "==", destinationId));
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
             const data = doc.data();
