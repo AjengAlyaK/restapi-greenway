@@ -67,7 +67,7 @@ export const allDestination = async (req, res) => {
         const promises = [];
         for (const destination of destinationList) {
             if (destination.idCampaign) {
-                console.log(`Document with ID ${destination.id} has idCampaign: ${destination.idCampaign}`);
+                // console.log(`Document with ID ${destination.id} has idCampaign: ${destination.idCampaign}`);
                 const campaignDocSnapshot = await getDoc(doc(db, 'campaigns', destination.idCampaign));
                 if (campaignDocSnapshot.exists()) {
                     const campaignData = campaignDocSnapshot.data();
@@ -170,8 +170,10 @@ export const destinationById = async (req, res) => {
 };
 
 export const commentOnDestination = async (req, res) => {
-    const { idDestination, comment } = req.body;
+    // const { idDestination, comment } = req.body;
+    const { comment } = req.body;
     // const name = req.user.name;
+    const idDestination = req.params.id;
     const idUser = req.user.uid;
 
     if (!idDestination || !comment ) {
@@ -219,5 +221,4 @@ export const commentOnDestination = async (req, res) => {
             }
         });
     }
-    
 };

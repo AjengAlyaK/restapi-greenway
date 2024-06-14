@@ -351,11 +351,12 @@ export const discussionById = async (req, res) => {
         // Take all comment on destination that has same idDiscussion
         const comments_on_discussion = [];
         const commentsRef = collection(db, "comment_on_discussion");
-        const q = query(commentsRef, where("idDiscussion", "==", discussionId));
+        // const q = query(commentsRef, where("idDiscussion", "==", discussionId));
+        const q = query(commentsRef, where("discussionId", "==", discussionId));
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            console.log(data);
+            // console.log(data);
             const createdAt = data.createdAt;
             const date = createdAt.toDate();
             data.createdAt = date.toISOString();
@@ -370,7 +371,7 @@ export const discussionById = async (req, res) => {
             message: "ok",
             data: {
                 detailDiscussion: {
-                    idDiscussion: discussionId,
+                    discussionId: discussionId,
                     ...discussionData,
                     comments: comments_on_discussion,
                 }
@@ -390,12 +391,14 @@ export const discussionById = async (req, res) => {
 };
 
 export const commentOnDiscussion = async (req, res) => {
-    const { idDiscussion, comment } = req.body;
+    // const { idDiscussion, comment } = req.body;
+    const { comment } = req.body;
     // const name = req.user.name;
-    if (!idDiscussion || !comment) {
-        return res.status(400).json({ error: "idDiscussion and comment are required are required." });
+    if (!comment) {
+        return res.status(400).json({ error: "discussionId and comment are required are required." });
     }
     const idUser = req.user.uid;
+    const discussionId = req.params.id;
     const userRef = doc(db, 'users', idUser);
     const userDoc = await getDoc(userRef);
     if (!userDoc.exists()) {
@@ -407,14 +410,14 @@ export const commentOnDiscussion = async (req, res) => {
     const upVotesBy = [];
     const downVotesBy = [];
     try {
-        const discussionRef = doc(db, "discussions", idDiscussion);
+        const discussionRef = doc(db, "discussions", discussionId);
         const discussionDoc = await getDoc(discussionRef);
 
         if (!discussionDoc.exists()) {
             return res.status(404).json({ error: "Discussion not found." });
         }
         const addCommentOnDiscussion = await addDoc(collection(db, 'comment_on_discussion'), {
-            idDiscussion: idDiscussion,
+            discussionId: discussionId,
             idUser: idUser,
             name: name,
             photo: photoURL,
@@ -429,7 +432,7 @@ export const commentOnDiscussion = async (req, res) => {
             data: {
                 comment: {
                     id: addCommentOnDiscussion.id,
-                    idDiscussion,
+                    discussionId,
                     comment,
                     upVotesBy: upVotesBy,
                     downVotesBy: downVotesBy,

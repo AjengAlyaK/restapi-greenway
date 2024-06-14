@@ -99,7 +99,7 @@ app.get('/articles', allArticles);
 app.post('/destination', addDestination);
 app.get('/destinations', allDestination);
 app.get('/destination/:id', destinationById);
-app.post('/destination/comment', verifyToken, commentOnDestination);
+app.post('/destination/:id/comment', verifyToken, commentOnDestination);
 
 // Discussion
 app.post('/discussion', verifyToken, addDiscussion);
@@ -107,7 +107,7 @@ app.get('/discussions', allDiscussion);
 app.post('/discussion/:id/up-votes', verifyToken, upVotesOnDiscussion);
 app.post('/discussion/:id/down-votes', verifyToken, downVotesOnDiscussion);
 app.post('/discussion/:id/netral-votes', verifyToken, netralVotesOnDiscussion);
-app.post('/discussion/comment', verifyToken, commentOnDiscussion);
+app.post('/discussion/:id/comment', verifyToken, commentOnDiscussion);
 app.get('/discussion/:id', discussionById);
 app.post('/discussion/:id/comment/:id/up-votes', verifyToken, upVotesCommentOnDiscussion);
 app.post('/discussion/:id/comment/:id/down-votes', verifyToken, downVotesCommentOnDiscussion);
