@@ -351,7 +351,6 @@ export const discussionById = async (req, res) => {
         // Take all comment on destination that has same idDiscussion
         const comments_on_discussion = [];
         const commentsRef = collection(db, "comment_on_discussion");
-        // const q = query(commentsRef, where("idDiscussion", "==", discussionId));
         const q = query(commentsRef, where("discussionId", "==", discussionId));
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
@@ -363,7 +362,21 @@ export const discussionById = async (req, res) => {
             data.id = doc.id;
             data.upVotesBy = data.upVotesBy.map(voter => voter.id);
             data.downVotesBy = data.downVotesBy.map(voter => voter.id);
-            comments_on_discussion.push(data);
+            const obj = {
+                id: data.id,
+                discussionId: data.discussionId,
+                comment: data.comment,
+                upVotesBy: data.upVotesBy,
+                downVotesBy: data.downVotesBy,
+                createdAt: data.createdAt,
+                owner: {
+                    idUser: data.idUser,
+                    name: data.name,
+                    photo: data.photo
+                }
+            }
+            // comments_on_discussion.push(data);
+            comments_on_discussion.push(obj);
         });
 
         return res.status(200).json({
