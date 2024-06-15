@@ -51,11 +51,11 @@ export const register = async (req, res) => {
     } catch (error) {
         const errorCode = error.code;
         const errorMessage = error.message;
-        return res.status(400).json({
-            error: {
-                errorCode,
-                errorMessage
-            }
+        console.error("Login error:", errorCode, errorMessage);
+        return res.status(401).json({ 
+            status: "failed",
+            message: "Try again",
+            error: errorMessage 
         });
     }
 }
@@ -96,7 +96,11 @@ export const login = async (req, res) => {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.error("Login error:", errorCode, errorMessage);
-        return res.status(401).json({ error: errorMessage });
+        return res.status(401).json({ 
+            status: "failed",
+            message: "Invalid credential",
+            error: errorMessage 
+        });
     }
 }
 
@@ -111,6 +115,9 @@ export const logout = async (req, res) => {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.error("Logout error:", errorCode, errorMessage);
-        return res.status(500).json({ error: errorMessage });
+        return res.status(500).json({ 
+            status: "failed",
+            message: "log out failed",
+            error: errorMessage });
     }
 }
