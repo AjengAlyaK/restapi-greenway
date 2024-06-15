@@ -22,7 +22,7 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 // app.use(cors());
 const corsConfig = {
-    origin: '',
+    origin: '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE']
 }
