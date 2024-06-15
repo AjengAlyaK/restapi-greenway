@@ -17,7 +17,7 @@ const db = getFirestore(fireInit);
 
 export const addDestination = async (req, res) => {
     const { name, photo, location, description, idCampaign } = req.body;
-    if (!name || !photo || !location || !description ) {
+    if (!name || !photo || !location || !description) {
         return res.status(400).json({ error: "name, photo, location and description are required." });
     }
     const campaignId = idCampaign !== undefined ? idCampaign : null;
@@ -88,7 +88,7 @@ export const allDestination = async (req, res) => {
         }
 
         const resList = await Promise.all(promises);
-        
+
         return res.status(200).json({
             status: "success",
             message: "ok",
@@ -118,7 +118,7 @@ export const destinationById = async (req, res) => {
         }
         const destinationData = destinationDoc.data();
         const idCampaign = destinationData.idCampaign;
-        
+
         // get campaign by idCampaign in destination
         let campaignData = null;
         if (idCampaign !== null) {
@@ -141,8 +141,19 @@ export const destinationById = async (req, res) => {
             const createdAt = data.createdAt;
             const date = createdAt.toDate();
             data.createdAt = date.toISOString();
-            // console.log("data => ", data);
-            comments_on_destination.push(data);
+            // console.log(doc.id);
+            const obj = {
+                id: doc.id,
+                idDestination: data.idDestination,
+                comment: data.comment,
+                createdAt: data.createdAt,
+                owner: {
+                    idUser: data.idUser,
+                    name: data.name,
+                    photo: data.photo,
+                }
+            }
+            comments_on_destination.push(obj);
         });
 
         return res.status(200).json({
@@ -176,7 +187,7 @@ export const commentOnDestination = async (req, res) => {
     const idDestination = req.params.id;
     const idUser = req.user.uid;
 
-    if (!idDestination || !comment ) {
+    if (!idDestination || !comment) {
         return res.status(400).json({ error: "idDestination and comment are required are required." });
     }
     try {
@@ -203,11 +214,13 @@ export const commentOnDestination = async (req, res) => {
                 comment: {
                     id: addCommentOnDestination.id,
                     idDestination,
-                    idUser,
-                    name: name,
                     comment,
-                    photo: photoURL,
-                    createdAt: new Date()
+                    createdAt: new Date(),
+                    owner: {
+                        idUser,
+                        name: name,
+                        photo: photoURL,
+                    }
                 }
             }
         });
