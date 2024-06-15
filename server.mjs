@@ -20,7 +20,14 @@ import { addAboutUs, allAboutUs } from './controllers/aboutUs.mjs';
 const app = express();
 app.use(express.static('public'));
 app.use(bodyParser.json());
-app.use(cors());
+// app.use(cors());
+const corsConfig = {
+    origin: '',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+}
+app.use(cors(corsConfig))
+app.options("", cors(corsConfig))
 const port = 4000;
 
 const fireInit = initializeApp({
