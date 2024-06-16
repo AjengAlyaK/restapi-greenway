@@ -9,8 +9,7 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "server.mjs",
-            "methods": ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]
+            "dest": "server.mjs"
         }
     ]
 }
