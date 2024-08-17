@@ -1,6 +1,5 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, deleteDoc, updateDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, addDoc, deleteDoc, updateDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAxWdJ-mNMjucjnVhv2821_nP5mVYPFS_k",
@@ -12,15 +11,15 @@ const firebaseConfig = {
 };
 
 const fireInit = initializeApp(firebaseConfig);
-const auth = getAuth(fireInit);
 const db = getFirestore(fireInit);
 
 export const review = async (req, res) => {
     const { name, review, photo, occupation } = req.body;
-    // Validate required fields
+
     if (!name || !review || !photo || !occupation) {
         return res.status(400).json({ error: "name, review, photo and occupation are required." });
     }
+
     try {
         const addReview = await addDoc(collection(db, "reviews"), {
             name: name,
@@ -86,10 +85,11 @@ export const deleteReview = async (req, res) => {
 export const updateReview = async (req, res) => {
     const reviewId = req.params.id;
     const { name, review, photo, occupation } = req.body;
-    // Validate required fields
+
     if (!name || !review || !photo || !occupation) {
         return res.status(400).json({ error: "name, review, photo and occupation are required." });
     }
+
     try {
         const reviewRef = doc(db, "reviews", reviewId);
         await updateDoc(reviewRef, {

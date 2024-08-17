@@ -1,6 +1,5 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, deleteDoc, updateDoc, collection, getDocs, getDoc, query, where } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, addDoc, deleteDoc, updateDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAxWdJ-mNMjucjnVhv2821_nP5mVYPFS_k",
@@ -12,7 +11,6 @@ const firebaseConfig = {
 };
 
 const fireInit = initializeApp(firebaseConfig);
-const auth = getAuth(fireInit);
 const db = getFirestore(fireInit);
 
 export const addAboutUs = async (req, res) => {
@@ -155,5 +153,3 @@ export const allAboutUs = async (req, res) => {
         });
     }
 };
-
-// little changes

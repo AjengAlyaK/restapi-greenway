@@ -1,18 +1,12 @@
 import express from 'express';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import { format } from 'date-fns';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { initializeApp, getApps, getApp } from 'firebase/app';
 import admin from 'firebase-admin';
-import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { getFirestore, collection, getDocs, setDoc, doc, addDoc, getDoc, query, where, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore/lite';
+import 'firebase/firestore';
 import { register, login, logout } from './controllers/auth.mjs';
 import { addCampaign, allCampaign, campaignById, deleteCampaign, updateCampaign } from './controllers/campaign.mjs';
 import { allReview, deleteReview, review, updateReview } from './controllers/review.mjs';
 import { addArticle, allArticles, deleteArticle, updateArticle } from './controllers/article.mjs';
-import 'firebase/firestore';
 import { addDestination, allDestination, commentOnDestination, deleteCommentOnDestination, deleteDestination, destinationById, updateDestination } from './controllers/destination.mjs';
 import { addDiscussion, allDiscussion, commentOnDiscussion, deleteCommentOnDiscussion, deleteDiscussion, discussionById, downVotesCommentOnDiscussion, downVotesOnDiscussion, netralVotesCommentOnDiscussion, netralVotesOnDiscussion, upVotesCommentOnDiscussion, upVotesOnDiscussion } from './controllers/discussion.mjs';
 import { addAboutUs, allAboutUs, deleteAboutUs, updateAboutUs } from './controllers/aboutUs.mjs';
@@ -22,15 +16,6 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(cors());
 const port = 4000;
-
-const fireInit = initializeApp({
-    apiKey: "AIzaSyAxWdJ-mNMjucjnVhv2821_nP5mVYPFS_k",
-    authDomain: "mostgreen.firebaseapp.com",
-    projectId: "mostgreen",
-    storageBucket: "mostgreen.appspot.com",
-    messagingSenderId: "415391017886",
-    appId: "1:415391017886:web:2d5ba7e2dc3cb2b971448f"
-});
 
 admin.initializeApp({
     credential: admin.credential.cert({
@@ -47,9 +32,6 @@ admin.initializeApp({
         "universe_domain": "googleapis.com"
     }),
 });
-
-const db = getFirestore(fireInit);
-const auth = getAuth(fireInit);
 
 const setAdmin = async (uid) => {
     await admin.auth().setCustomUserClaims(uid, { admin: true });
@@ -79,8 +61,6 @@ const authenticateAdmin = async (req, res, next) => {
         return res.status(403).send('Unauthorized: idk why');
     }
 };
-
-// db: green
 
 // middleware
 const verifyToken = async (req, res, next) => {

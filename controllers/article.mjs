@@ -1,6 +1,5 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, deleteDoc, updateDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, addDoc, deleteDoc, updateDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAxWdJ-mNMjucjnVhv2821_nP5mVYPFS_k",
@@ -12,14 +11,15 @@ const firebaseConfig = {
 };
 
 const fireInit = initializeApp(firebaseConfig);
-const auth = getAuth(fireInit);
 const db = getFirestore(fireInit);
 
 export const addArticle = async (req, res) => {
     const { title, picture, link } = req.body;
+
     if (!title || !picture || !link) {
         return res.status(400).json({ error: "title, picture, and link are required." });
     }
+
     try {
         const addArticle = await addDoc(collection(db, "articles"), {
             title: title,
@@ -83,9 +83,11 @@ export const deleteArticle = async (req, res) => {
 export const updateArticle = async (req, res) => {
     const articleId = req.params.id;
     const { title, picture, link } = req.body;
+
     if (!title || !picture || !link) {
         return res.status(400).json({ error: "title, picture, and link are required." });
     }
+
     try {
         const articleRef = doc(db, "articles", articleId);
         await updateDoc(articleRef, {

@@ -1,6 +1,5 @@
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, deleteDoc, collection, getDocs, getDoc, query, where, updateDoc, arrayUnion, arrayRemove, writeBatch } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, addDoc, deleteDoc, collection, getDocs, getDoc, query, where, updateDoc, arrayUnion, arrayRemove, writeBatch } from 'firebase/firestore/lite';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAxWdJ-mNMjucjnVhv2821_nP5mVYPFS_k",
@@ -12,7 +11,6 @@ const firebaseConfig = {
 };
 
 const fireInit = initializeApp(firebaseConfig);
-const auth = getAuth(fireInit);
 const db = getFirestore(fireInit);
 
 export const addDiscussion = async (req, res) => {
@@ -20,6 +18,7 @@ export const addDiscussion = async (req, res) => {
     const idUser = req.user.uid;
     const upVotesBy = [];
     const downVotesBy = [];
+
     try {
         const userRef = doc(db, 'users', idUser);
         const userDoc = await getDoc(userRef);
@@ -116,7 +115,6 @@ export const  deleteDiscussion = async (req, res) => {
         // Commit batch
         await batch.commit();
 
-        // await deleteDoc(doc(db, "discussions", discussionId));
         return res.status(200).json({
             status: "success",
             message: "Discussion and its comments deleted successfully",
