@@ -1,5 +1,5 @@
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
+import { getFirestore, setDoc, doc, addDoc, deleteDoc, updateDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -53,6 +53,77 @@ export const addCampaign = async (req, res) => {
         });
     }
 };
+
+export const deleteCampaign = async (req, res) => {
+    const campaignId = req.params.id;
+
+    if (!campaignId) {
+        return res.status(400).json({ error: "campaignId is required." });
+    }
+
+    try {
+        const campaignRef = doc(db, 'campaigns', campaignId);
+        const campaignDoc = await getDoc(campaignRef);
+        if (!campaignDoc.exists()) {
+            return res.status(404).json({ error: "Campaign not found." });
+        }
+        await deleteDoc(doc(db, "campaigns", campaignId));
+        return res.status(200).json({
+            status: "success",
+            message: "Campaign deleted successfully",
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+}
+
+export const updateCampaign = async (req, res) => {
+    const campaignId = req.params.id;
+    const { name, picture, location, description, date } = req.body;
+    if (!name || !picture || !location || !description || !date) {
+        return res.status(400).json({ error: "All fields are required." });
+    }
+    try {
+        const campaignRef = doc(db, "campaigns", campaignId);
+        await updateDoc(campaignRef, {
+            name, 
+            picture, 
+            location, 
+            description, 
+            date
+        });
+        return res.status(200).json({
+            status: "success",
+            message: "ok",
+            data: {
+                campaign: {
+                    id: campaignId,
+                    name,
+                    picture,
+                    location,
+                    description,
+                    date
+                }
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+}
 
 export const allCampaign = async (req, res) => {
     try {

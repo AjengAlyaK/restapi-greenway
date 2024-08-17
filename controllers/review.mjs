@@ -1,5 +1,5 @@
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
+import { getFirestore, setDoc, doc, addDoc, deleteDoc, updateDoc, collection, getDocs, getDoc } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -52,6 +52,76 @@ export const review = async (req, res) => {
         });
     }
 };
+
+export const deleteReview = async (req, res) => {
+    const reviewId = req.params.id;
+
+    if (!reviewId) {
+        return res.status(400).json({ error: "reviewId is required." });
+    }
+
+    try {
+        const reviewRef = doc(db, 'reviews', reviewId);
+        const reviewDoc = await getDoc(reviewRef);
+        if (!reviewDoc.exists()) {
+            return res.status(404).json({ error: "Review not found." });
+        }
+        await deleteDoc(doc(db, "reviews", reviewId));
+        return res.status(200).json({
+            status: "success",
+            message: "Review deleted successfully",
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+}
+
+export const updateReview = async (req, res) => {
+    const reviewId = req.params.id;
+    const { name, review, photo, occupation } = req.body;
+    // Validate required fields
+    if (!name || !review || !photo || !occupation) {
+        return res.status(400).json({ error: "name, review, photo and occupation are required." });
+    }
+    try {
+        const reviewRef = doc(db, "reviews", reviewId);
+        await updateDoc(reviewRef, {
+            name,
+            review,
+            photo,
+            occupation
+        });
+        return res.status(200).json({
+            status: "success",
+            message: "ok",
+            data: {
+                review: {
+                    id: reviewId,
+                    name,
+                    review,
+                    photo,
+                    occupation
+                }
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+}
 
 export const allReview = async (req, res) => {
     try {

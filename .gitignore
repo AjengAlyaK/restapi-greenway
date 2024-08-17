@@ -3,3 +3,4 @@ config.js
 serviceKey.js
 .vercel
 .env
+artifact.txt

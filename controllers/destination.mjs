@@ -1,5 +1,5 @@
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, collection, getDocs, getDoc, query, where } from 'firebase/firestore/lite';
+import { getFirestore, setDoc, doc, addDoc, deleteDoc, updateDoc, collection, getDocs, getDoc, query, where, writeBatch } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -54,6 +54,92 @@ export const addDestination = async (req, res) => {
         });
     }
 };
+
+export const deleteDestination = async (req, res) => {
+    const destinationId = req.params.id;
+
+    if (!destinationId) {
+        return res.status(400).json({ error: "destinationId is required." });
+    }
+
+    try {
+        const destinationRef = doc(db, 'destinations', destinationId);
+        const destinationDoc = await getDoc(destinationRef);
+        if (!destinationDoc.exists()) {
+            return res.status(404).json({ error: "Comment not found." });
+        }
+
+        const commentsRef = collection(db, "comment_on_destination");
+        const q = query(commentsRef, where("idDestination", "==", destinationId));
+        const querySnapshot = await getDocs(q);
+
+        const batch = writeBatch(db);
+
+        querySnapshot.forEach((doc) => {
+            batch.delete(doc.ref);  // Add comment deletions to batch
+        });
+
+        batch.delete(destinationRef);  // Add destination deletion to batch
+
+        // Commit batch
+        await batch.commit();
+
+        return res.status(200).json({
+            status: "success",
+            message: "Destination and its comments deleted successfully",
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+}
+
+export const updateDestination = async (req, res) => {
+    const destinationId = req.params.id;
+    const { name, photo, location, description, idCampaign } = req.body;
+    if (!name || !photo || !location || !description) {
+        return res.status(400).json({ error: "name, photo, location and description are required." });
+    }
+    try {
+        const destinationRef = doc(db, "destinations", destinationId);
+        await updateDoc(destinationRef, {
+            name, 
+            photo, 
+            location, 
+            description, 
+            idCampaign 
+        });
+        return res.status(200).json({
+            status: "success",
+            message: "ok",
+            data: {
+                destination: {
+                    id: destinationId,
+                    name,
+                    photo,
+                    location,
+                    description,
+                    idCampaign
+                }
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+}
 
 export const allDestination = async (req, res) => {
     try {
@@ -235,3 +321,48 @@ export const commentOnDestination = async (req, res) => {
         });
     }
 };
+
+export const deleteCommentOnDestination = async (req, res) => {
+    const idCommentOnDestination = req.params.commentId;
+    const idUser = req.user.uid;
+
+    if (!idCommentOnDestination) {
+        return res.status(400).json({ error: "idCommentOnDestination is required." });
+    }
+    
+    try {
+        const userRef = doc(db, 'users', idUser);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        const commentRef = doc(db, 'comment_on_destination', idCommentOnDestination);
+        const commentDoc = await getDoc(commentRef);
+        if (!commentDoc.exists()) {
+            return res.status(404).json({ error: "Comment not found." });
+        }
+
+        const commentData = commentDoc.data();
+        const ownerId = commentData.idUser;
+
+        if (idUser !== ownerId) {
+            return res.status(403).json({ error: "This comment not belong to you, dont try malicious stuff." });
+        }
+
+        await deleteDoc(doc(db, "comment_on_destination", idCommentOnDestination));
+        return res.status(200).json({
+            status: "success",
+            message: "Comment deleted successfully",
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+}

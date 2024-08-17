@@ -4,30 +4,23 @@ import path from 'path';
 import { format } from 'date-fns';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import admin from 'firebase-admin';
 import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { getFirestore, collection, getDocs, setDoc, doc, addDoc, getDoc, query, where, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore/lite';
 import { register, login, logout } from './controllers/auth.mjs';
-import { addCampaign, allCampaign, campaignById } from './controllers/campaign.mjs';
-import { allReview, review } from './controllers/review.mjs';
-import { addArticle, allArticles } from './controllers/article.mjs';
+import { addCampaign, allCampaign, campaignById, deleteCampaign, updateCampaign } from './controllers/campaign.mjs';
+import { allReview, deleteReview, review, updateReview } from './controllers/review.mjs';
+import { addArticle, allArticles, deleteArticle, updateArticle } from './controllers/article.mjs';
 import 'firebase/firestore';
-import { addDestination, allDestination, commentOnDestination, destinationById } from './controllers/destination.mjs';
-import { addDiscussion, allDiscussion, commentOnDiscussion, discussionById, downVotesCommentOnDiscussion, downVotesOnDiscussion, netralVotesCommentOnDiscussion, netralVotesOnDiscussion, upVotesCommentOnDiscussion, upVotesOnDiscussion } from './controllers/discussion.mjs';
-import { addAboutUs, allAboutUs } from './controllers/aboutUs.mjs';
+import { addDestination, allDestination, commentOnDestination, deleteCommentOnDestination, deleteDestination, destinationById, updateDestination } from './controllers/destination.mjs';
+import { addDiscussion, allDiscussion, commentOnDiscussion, deleteCommentOnDiscussion, deleteDiscussion, discussionById, downVotesCommentOnDiscussion, downVotesOnDiscussion, netralVotesCommentOnDiscussion, netralVotesOnDiscussion, upVotesCommentOnDiscussion, upVotesOnDiscussion } from './controllers/discussion.mjs';
+import { addAboutUs, allAboutUs, deleteAboutUs, updateAboutUs } from './controllers/aboutUs.mjs';
 
 const app = express();
 app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(cors());
-// const corsConfig = {
-//     origin: '*',
-//     credentials: true,
-//     methods: ['GET', 'POST', 'PUT', 'DELETE']
-// }
-// app.use(cors(corsConfig))
-// app.options("", cors(corsConfig))
 const port = 4000;
 
 const fireInit = initializeApp({
@@ -57,6 +50,35 @@ admin.initializeApp({
 
 const db = getFirestore(fireInit);
 const auth = getAuth(fireInit);
+
+const setAdmin = async (uid) => {
+    await admin.auth().setCustomUserClaims(uid, { admin: true });
+};
+
+// Call this function with the UID of the user you want to make an admin
+setAdmin('ksiitY4bPiah3N3utYKm7O8zSIK2');
+
+const authenticateAdmin = async (req, res, next) => {
+    const idToken = req.headers.authorization?.split('Bearer ')[1];
+
+    if (!idToken) {
+        return res.status(403).send('Unauthorized: no token');
+    }
+
+    try {
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const user = await admin.auth().getUser(decodedToken.uid);
+
+        if (user.customClaims && user.customClaims.admin === true) {
+            req.user = user;
+            next();
+        } else {
+            return res.status(403).send('Unauthorized: u r not admin');
+        }
+    } catch (error) {
+        return res.status(403).send('Unauthorized: idk why');
+    }
+};
 
 // db: green
 
@@ -90,39 +112,52 @@ app.post('/login', login);
 app.post('/logout', logout);
 
 // Route for campaign
-app.post('/campaign', addCampaign);
+app.post('/campaign', authenticateAdmin, addCampaign);
 app.get('/campaigns', allCampaign);
 app.get('/campaign/:id', campaignById);
+app.delete('/campaign/:id', authenticateAdmin, deleteCampaign);
+app.put('/campaign/:id', authenticateAdmin, updateCampaign);
 
 // Route for people are talking
-app.post('/review', review);
+app.post('/review', authenticateAdmin, review);
 app.get('/reviews', allReview);
+app.delete('/review/:id', authenticateAdmin, deleteReview);
+app.put('/review/:id', authenticateAdmin, updateReview);
 
 // Route for artikel
-app.post('/article', addArticle);
+app.post('/article', authenticateAdmin, addArticle);
 app.get('/articles', allArticles);
+app.delete('/article/:id', authenticateAdmin, deleteArticle);
+app.put('/article/:id', authenticateAdmin, updateArticle);
 
 // Destination
-app.post('/destination', addDestination);
+app.post('/destination', authenticateAdmin, addDestination);
 app.get('/destinations', allDestination);
 app.get('/destination/:id', destinationById);
 app.post('/destination/:id/comment', verifyToken, commentOnDestination);
+app.delete('/destination/:id/comment/:commentId', verifyToken, deleteCommentOnDestination);
+app.delete('/destination/:id', authenticateAdmin, deleteDestination);
+app.put('/destination/:id', authenticateAdmin, updateDestination);
 
 // Discussion
 app.post('/discussion', verifyToken, addDiscussion);
+app.delete('/discussion/:id', verifyToken, deleteDiscussion);
 app.get('/discussions', allDiscussion);
 app.post('/discussion/:id/up-votes', verifyToken, upVotesOnDiscussion);
 app.post('/discussion/:id/down-votes', verifyToken, downVotesOnDiscussion);
 app.post('/discussion/:id/netral-votes', verifyToken, netralVotesOnDiscussion);
 app.post('/discussion/:id/comment', verifyToken, commentOnDiscussion);
+app.delete('/discussion/:id/comment/:commentId', verifyToken, deleteCommentOnDiscussion);
 app.get('/discussion/:id', discussionById);
 app.post('/discussion/:id/comment/:id/up-votes', verifyToken, upVotesCommentOnDiscussion);
 app.post('/discussion/:id/comment/:id/down-votes', verifyToken, downVotesCommentOnDiscussion);
 app.post('/discussion/:id/comment/:id/netral-votes', verifyToken, netralVotesCommentOnDiscussion);
 
 // About Us
-app.post('/about-us', addAboutUs);
+app.post('/about-us', authenticateAdmin, addAboutUs);
 app.get('/about-us', allAboutUs);
+app.delete('/about-us/:id', authenticateAdmin, deleteAboutUs);
+app.put('/about-us/:id', authenticateAdmin, updateAboutUs);
 
 // See Own Profile
 app.get('/me', verifyToken, (req, res) => {

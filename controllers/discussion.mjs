@@ -1,5 +1,5 @@
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
-import { getFirestore, setDoc, doc, addDoc, collection, getDocs, getDoc, query, where, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore/lite';
+import { getFirestore, setDoc, doc, addDoc, deleteDoc, collection, getDocs, getDoc, query, where, updateDoc, arrayUnion, arrayRemove, writeBatch } from 'firebase/firestore/lite';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -70,6 +70,68 @@ export const addDiscussion = async (req, res) => {
         });
     }
 };
+
+export const  deleteDiscussion = async (req, res) => {
+    const discussionId = req.params.id;
+    const idUser = req.user.uid;
+
+    if (!discussionId) {
+        return res.status(400).json({ error: "discussionId is required." });
+    }
+
+    try {
+        const userRef = doc(db, 'users', idUser);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        const discussionRef = doc(db, 'discussions', discussionId);
+        const discussionDoc = await getDoc(discussionRef);
+        if (!discussionDoc.exists()) {
+            return res.status(404).json({ error: "Comment not found." });
+        }
+
+        const discussionData = discussionDoc.data();
+        const ownerId = discussionData.idUser;
+
+        if (idUser !== ownerId) {
+            return res.status(403).json({ error: "This discussion not belong to you, dont try malicious stuff." });
+        }
+
+        // Query comments associated with the discussion
+        const commentsRef = collection(db, "comment_on_discussion");
+        const q = query(commentsRef, where("discussionId", "==", discussionId));
+        const querySnapshot = await getDocs(q);
+
+        // Initialize batch
+        const batch = writeBatch(db);
+
+        querySnapshot.forEach((doc) => {
+            batch.delete(doc.ref);  // Add comment deletions to batch
+        });
+
+        batch.delete(discussionRef);  // Add discussion deletion to batch
+
+        // Commit batch
+        await batch.commit();
+
+        // await deleteDoc(doc(db, "discussions", discussionId));
+        return res.status(200).json({
+            status: "success",
+            message: "Discussion and its comments deleted successfully",
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+}
 
 export const allDiscussion = async (req, res) => {
     try {
@@ -348,7 +410,7 @@ export const discussionById = async (req, res) => {
             }
         };
 
-        // Take all comment on destination that has same idDiscussion
+        // Take all comment on discussion that has same idDiscussion
         const comments_on_discussion = [];
         const commentsRef = collection(db, "comment_on_discussion");
         const q = query(commentsRef, where("discussionId", "==", discussionId));
@@ -469,6 +531,51 @@ export const commentOnDiscussion = async (req, res) => {
         });
     }
 };
+
+export const deleteCommentOnDiscussion = async (req, res) => {
+    const idCommentOnDiscussion = req.params.commentId;
+    const idUser = req.user.uid;
+
+    if (!idCommentOnDiscussion) {
+        return res.status(400).json({ error: "idCommentOnDiscussion is required." });
+    }
+
+    try {
+        const userRef = doc(db, 'users', idUser);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        const commentRef = doc(db, 'comment_on_discussion', idCommentOnDiscussion);
+        const commentDoc = await getDoc(commentRef);
+        if (!commentDoc.exists()) {
+            return res.status(404).json({ error: "Comment not found." });
+        }
+
+        const commentData = commentDoc.data();
+        const ownerId = commentData.idUser;
+
+        if (idUser !== ownerId) {
+            return res.status(403).json({ error: "This comment not belong to you, dont try malicious stuff." });
+        }
+
+        await deleteDoc(doc(db, "comment_on_discussion", idCommentOnDiscussion));
+        return res.status(200).json({
+            status: "success",
+            message: "Comment deleted successfully",
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+}
 
 export const upVotesCommentOnDiscussion = async (req, res) => {
     const commentOnDiscussionId = req.params.id;
