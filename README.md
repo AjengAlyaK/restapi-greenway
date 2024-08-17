@@ -1,17 +1,33 @@
-how to run this:
-1. npm install
-2. create config.js with firebase configuration init
 
-config.js example
+# REST API GreenWay
 
-const fireConfing = {
-    apiKey: "fill this with actual config",
-    authDomain: "fill this with actual config",
-    projectId: "fill this with actual config",
-    storageBucket: "fill this with actual config",
-    messagingSenderId: "fill this with actual config",
-    appId: "fill this with actual config",
-    measurementId: "fill this with actual config"
-};
+This is REST API for GreenWay App.
 
-module.exports = fireConfing;
+
+
+## How to run on local
+
+Clone this repository (branch-main)
+
+```bash
+  git clone https://github.com/AjengAlyaK/restapi-greenway.git
+```
+Go to the root folder
+
+```bash
+  cd yourfoldername
+```
+
+Install all dependency
+
+```bash
+  npm install
+```
+
+Run   
+```bash
+  npm run start
+```
+
+## Documentation API
+https://bit.ly/documentation-restapi-greenway
