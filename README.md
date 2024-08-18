@@ -4,6 +4,7 @@
 GreenWay API is a backend server for the GreenWay App. This project was made using Express.js and Firebase for the backend. It was developed to fulfill one of graduation requirements for the Capstone Project in the SIB 6 Dicoding program React and Backend Developer.
 
 ## Built With
+### Tech Stack <a name="tech-stack"></a>
 <details>
   <summary>Server</summary>
   
@@ -12,7 +13,7 @@ GreenWay API is a backend server for the GreenWay App. This project was made usi
 </details>
 
 <details>
-  <summary>Database</summary>
+  <summary>Firebase</summary>
   
   - Postgres
 
