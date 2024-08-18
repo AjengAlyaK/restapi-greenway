@@ -1,26 +1,23 @@
+<a name="readme-top"></a>
 
 # GreenWay API
 
 GreenWay API is a backend server for the GreenWay App. This project was made using Express.js and Firebase for the backend. It was developed to fulfill one of graduation requirements for the Capstone Project in the SIB 6 Dicoding program React and Backend Developer.
 
 ## Built With
+
 ### Tech Stack <a name="tech-stack"></a>
 <details>
   <summary>Server</summary>
-  
   - Node
-
 </details>
 
 <details>
   <summary>Firebase</summary>
-  
   - Postgres
-
 </details>
 
 ### Key Features <a name="key-features"></a>
-
 - **Authentication**
 - **Destination**
 - **Campaign**
@@ -30,6 +27,9 @@ GreenWay API is a backend server for the GreenWay App. This project was made usi
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Documentation API
+
+https://bit.ly/documentation-restapi-greenway
 
 ## How to run on local
 
@@ -55,5 +55,27 @@ Run
   npm run start
 ```
 
-## Documentation API
-https://bit.ly/documentation-restapi-greenway
+## 🔭 Future Features <a name="future-features"></a>
+
+- **Add OAuth**
+- **User Profile**
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## 🤝 Contributing <a name="contributing"></a>
+
+Contributions, issues, and feature requests are welcome!
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## ⭐️ Show your support <a name="support"></a>
+
+If you like this project you can share this project to your friend
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## 📝 License <a name="license"></a>
+
+This project is [MIT](./LICENSE) licensed.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
