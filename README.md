@@ -1,6 +1,6 @@
 <a name="readme-top"></a>
 <p align="center">
-  <img src="https://firebasestorage.googleapis.com/v0/b/mostgreen.appspot.com/o/Tak_berjudul63-hd__2_-removebg-preview.png?alt=media&token=eca5f180-7753-4567-94a5-6ed13f674861g" alt="Logo" width="50" style="vertical-align: middle;">
+  <img src="https://firebasestorage.googleapis.com/v0/b/mostgreen.appspot.com/o/Tak_berjudul63-hd__2_-removebg-preview.png?alt=media&token=eca5f180-7753-4567-94a5-6ed13f674861g" alt="Logo" width="100" style="vertical-align: middle;">
 </p>
 
 # GreenWay API
