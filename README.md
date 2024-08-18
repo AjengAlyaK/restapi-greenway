@@ -1,11 +1,10 @@
 <a name="readme-top"></a>
-
 # GreenWay API
 
 GreenWay API is a backend server for the GreenWay App. This project was made using Express.js and Firebase for the backend. It was developed to fulfill one of graduation requirements for the Capstone Project in the SIB 6 Dicoding program React and Backend Developer.
 
 
-## Built With
+## 🛠 Built With
 
 ### Tech Stack <a name="tech-stack"></a>
 <details>
@@ -28,14 +27,11 @@ GreenWay API is a backend server for the GreenWay App. This project was made usi
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## 📄 Documentation API
 
+coming soon
 
-
-## Documentation API
-
-https://bit.ly/documentation-restapi-greenway
-
-## How to run on local
+## 💻 How to run on local
 
 Clone this repository (branch-main)
 
@@ -61,8 +57,9 @@ Run
 
 ## 🔭 Future Features <a name="future-features"></a>
 
+- **Documentation API**
 - **Add OAuth**
-- **User Profile**
+- **Fitur User Profile**
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
