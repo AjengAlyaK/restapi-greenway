@@ -19,6 +19,17 @@ GreenWay API is a backend server for the GreenWay App. This project was made usi
 
 </details>
 
+### Key Features <a name="key-features"></a>
+
+- **Authentication**
+- **Destination**
+- **Campaign**
+- **Article**
+- **About**
+- **Discussion Forum**
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 
 ## How to run on local
 
