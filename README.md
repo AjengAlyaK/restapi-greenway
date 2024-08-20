@@ -18,7 +18,10 @@ GreenWay API is a backend server for the GreenWay App. This project was made usi
 
 <details>
   <summary>Firebase</summary>
-  - Postgres
+  - Firestore
+  - Firebase Athentication
+  - Firebase Admin
+  - Firebase Storage
 </details>
 
 ### Key Features <a name="key-features"></a>
