@@ -33,7 +33,7 @@ GreenWay API is a backend server for the GreenWay App. This project was made usi
 
 ## 📄 Documentation API
 
-coming soon
+[Documentation API](https://drive.google.com/file/d/19Dw7ADIi9qLsmJ9OZn-QOvolwwVHv5D9/view?usp=drive_link)
 
 ## 💻 How to run on local
 
@@ -61,7 +61,7 @@ Run
 
 ## 🔭 Future Features <a name="future-features"></a>
 
-- **Documentation API**
+- **Documentation API With Docsify**
 - **Add OAuth**
 - **Fitur User Profile**
 
