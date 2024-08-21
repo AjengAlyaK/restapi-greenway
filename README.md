@@ -48,7 +48,7 @@ Clone this repository (branch-main)
 Go to the root folder
 
 ```bash
-  cd yourfoldername
+  cd restapi-greenway
 ```
 
 Install all dependency
