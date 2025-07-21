@@ -1,7 +1,7 @@
 
 # GreenWay API
 
-This is REST API for GreenWay App.
+This is dummy API for GreenWay App. This API was made for Capstone Project Dicoding SIB 6 React and Backend Developer 6
 
 
 
@@ -15,7 +15,7 @@ Clone this repository (branch-main)
 Go to the root folder
 
 ```bash
-  cd yourfoldername
+  cd restapi-greenway
 ```
 
 Install all dependency

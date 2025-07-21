@@ -272,8 +272,9 @@ export const commentOnDestination = async (req, res) => {
     const idUser = req.user.uid;
 
     if (!idDestination || !comment) {
-        return res.status(400).json({ error: "idDestination and comment are required are required." });
+        return res.status(400).json({ error: "idDestination and comment are required" });
     }
+
     try {
         const userRef = doc(db, 'users', idUser);
         const userDoc = await getDoc(userRef);
@@ -304,6 +305,62 @@ export const commentOnDestination = async (req, res) => {
                         idUser,
                         name: name,
                         photo: photoURL,
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        return res.status(400).json({
+            error: {
+                errorCode,
+                errorMessage
+            }
+        });
+    }
+};
+
+export const updateCommentOnDestination = async (req, res) => {
+    const userId = req.user.uid;
+    const destinationId = req.params.id;
+    const commentId = req.params.commentId;
+
+    const { comment } = req.body;
+
+    if (!userId || !destinationId || !commentId || !comment) {
+        return res.status(400).json({ error: "commentId, userId, and description are required." });
+    };
+
+    try {
+        const userRef = doc(db, 'users', userId);
+        const userDoc = await getDoc(userRef);
+
+        const commentRef = doc(db, 'comment_on_destination', commentId);
+        const commentDoc = await getDoc(commentRef);
+
+        if( !userDoc.exists() || !commentDoc.exists()) {
+            return res.status(404).json({ error: "User or comment not found." });
+        }
+
+        await updateDoc(commentRef, {
+            comment: comment,
+            createdAt: new Date()
+        });
+
+        return res.status(200).json({
+            status: "success",
+            message: "Comment updated successfully",
+            data: {
+                comment: {
+                    id: commentId,
+                    idDestination: destinationId,
+                    comment: comment,
+                    createdAt: new Date(),
+                    owner: {
+                        idUser: userId,
+                        name: userDoc.data().displayName,
+                        photo: userDoc.data().photoURL
                     }
                 }
             }

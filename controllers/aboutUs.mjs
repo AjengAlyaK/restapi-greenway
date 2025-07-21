@@ -15,9 +15,11 @@ const db = getFirestore(fireInit);
 
 export const addAboutUs = async (req, res) => {
     const { name, role, linkedin, github, email, photo } = req.body;
+
     if (!name || !role || !linkedin || !github || !email || !photo) {
         return res.status(400).json({ error: "All fields are required." });
     }
+
     try {
         const aboutUs = addDoc(collection(db, "about_us"), {
             name: name,
@@ -87,9 +89,11 @@ export const deleteAboutUs = async (req, res) => {
 export const updateAboutUs = async(req, res) => {
     const aboutId = req.params.id;
     const { name, role, linkedin, github, email, photo } = req.body;
+
     if (!name || !role || !linkedin || !github || !email || !photo) {
         return res.status(400).json({ error: "All fields are required." });
     }
+    
     try {
         const aboutRef = doc(db, "about_us", aboutId);
         await updateDoc(aboutRef, {

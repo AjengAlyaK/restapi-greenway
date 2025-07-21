@@ -7,7 +7,7 @@ import { register, login, logout } from './controllers/auth.mjs';
 import { addCampaign, allCampaign, campaignById, deleteCampaign, updateCampaign } from './controllers/campaign.mjs';
 import { allReview, deleteReview, review, updateReview } from './controllers/review.mjs';
 import { addArticle, allArticles, deleteArticle, updateArticle } from './controllers/article.mjs';
-import { addDestination, allDestination, commentOnDestination, deleteCommentOnDestination, deleteDestination, destinationById, updateDestination } from './controllers/destination.mjs';
+import { addDestination, allDestination, commentOnDestination, updateCommentOnDestination, deleteCommentOnDestination, deleteDestination, destinationById, updateDestination } from './controllers/destination.mjs';
 import { addDiscussion, allDiscussion, commentOnDiscussion, deleteCommentOnDiscussion, deleteDiscussion, discussionById, downVotesCommentOnDiscussion, downVotesOnDiscussion, netralVotesCommentOnDiscussion, netralVotesOnDiscussion, upVotesCommentOnDiscussion, upVotesOnDiscussion } from './controllers/discussion.mjs';
 import { addAboutUs, allAboutUs, deleteAboutUs, updateAboutUs } from './controllers/aboutUs.mjs';
 
@@ -116,6 +116,7 @@ app.get('/destinations', allDestination);
 app.get('/destination/:id', destinationById);
 app.post('/destination/:id/comment', verifyToken, commentOnDestination);
 app.delete('/destination/:id/comment/:commentId', verifyToken, deleteCommentOnDestination);
+app.patch('/destination/:id/comment/:commentId', verifyToken, updateCommentOnDestination);
 app.delete('/destination/:id', authenticateAdmin, deleteDestination);
 app.put('/destination/:id', authenticateAdmin, updateDestination);
 
